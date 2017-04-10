@@ -11,6 +11,7 @@ g = { "a" : ["d"],
 }
 
 graph = Graph(g)
+print graph
 graph.write_dot("substitute_path", highlight_edges=[("a", "d"), ("d", "c")])
 #graph.write_dot("substitute_path", oformat="eps", highlight_edges=[("a", "d"), ("d", "c")])
 

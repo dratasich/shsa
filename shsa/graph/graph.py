@@ -12,9 +12,7 @@ Write/print functions from Daniel Prokesch.
 from subprocess import call # call dot to generate .png out of .dot files
 
 class Graph(object):
-    """Graph class with directed edges.
-
-    """
+    """Graph class with directed edges."""
 
     def __init__(self, graph_dict=None):
         """Initializes a graph object.
@@ -43,11 +41,11 @@ class Graph(object):
         return self.__graph_dict[item]
 
     def vertices(self):
-        """Returns the vertices of a graph. """
+        """Returns the vertices of a graph."""
         return list(self.__graph_dict.keys())
 
     def edges(self):
-        """Returns the edges of a graph. """
+        """Returns the edges of a graph."""
         return self.__generate_edges()
 
     def add_vertex(self, vertex):
@@ -88,10 +86,10 @@ class Graph(object):
         return edges
 
     def __str__(self):
-        res = "vertices: "
+        res = "V: "
         for k in self.__graph_dict:
-            res += str(k) + " "
-        res += "\nedges: "
+            res += "'" + str(k) + "' "
+        res += "\nE: "
         for edge in self.__generate_edges():
             res += str(edge) + " "
         return res

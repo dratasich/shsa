@@ -1,10 +1,17 @@
+"""Search algorithms.
 
+__author__ = "Denise Ratasich"
+
+Algorithms are taken from:
+(1) Introduction to Algorithms by Cormen, Leiserson, Rivest and Stein (MIT
+    Press, 2009).
+
+"""
+
+# (1) #########################################################################
 
 def bfs(graph, start):
-    """Breadth-first search.
-
-    See CLRS - Introduction to Algorithms.
-    """
+    """Breadth-first search."""
     visited = set()
     queue = [start] # first-in, first-out queue
     # as long as there is an unvisited vertex
@@ -18,9 +25,10 @@ def bfs(graph, start):
             queue.extend(adjacents - visited)
     return visited
 
+# adapted from bfs(..)
 def bfs_next(graph, visited=set(), queue=[]):
-    """Re-entrant BFS additionally returning the breadth-first tree (current queue
-    of unvisited vertices).
+    """Re-entrant BFS additionally returning the breadth-first tree (current
+    queue of unvisited vertices).
 
     """
     if queue:
