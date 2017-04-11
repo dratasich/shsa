@@ -18,9 +18,7 @@ class SearchTestCase(unittest.TestCase):
         self.graph_inst = None
 
     def test_bfs_visited(self):
-        """Tests breadth-first search.
-
-        """
+        """Tests breadth-first search."""
         # test with dictionary
         g = self.graph_dict
         visited = bfs(g, "a")

@@ -62,7 +62,7 @@ class Graph(object):
     def add_edge(self, edge):
         """Adds a directed edge, represented by a tuple or list of two vertices.
 
-        Assumes that edge is of type set, tuple or list; two vertices can have
+        Assumes that edge is of type tuple or list; two vertices can have
         multiple edges.
 
         """
@@ -100,21 +100,15 @@ class Graph(object):
         basefilename -- Name of the dot-file to generate.
         oformat -- Desired output format, e.g., "eps", "png" or "pdf". The
                    generated dot-file is converted to the given format.
-        highlight_edges -- Highlights given edges, a list of tuples.
 
         """
-        # bold red line
-        highlight = " [color=\"#ff0000\", penwidth=2]"
         gtype = "digraph"
         etype = "->"
         with open("{}.dot".format(basefilename), "w") as f:
             f.write("{} \"{}\" {{\n".format(gtype, basefilename))
             f.write("  node [fontname=\"sans-serif\"];\n")
             for u, v in self.edges():
-                f.write(" \"{0}\" {2} \"{1}\"{3};\n".format(u, v, etype,
-                                                            highlight if (u,v)
-                                                            in highlight_edges
-                                                            else ""))
+                f.write(" \"{0}\" {2} \"{1}\";\n".format(u, v, etype))
             f.write("}\n")
         if oformat:
             call(["/usr/bin/dot", "-T" + oformat, "-o",

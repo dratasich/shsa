@@ -2,9 +2,7 @@ import unittest
 from graph.graph import Graph
 
 class GraphTestCase(unittest.TestCase):
-    """Tests basic graph structure.
-
-    """
+    """Tests basic graph structure."""
 
     # def setUp(self):
     #     # TODO: init code for the testcases come here
@@ -46,6 +44,10 @@ class GraphTestCase(unittest.TestCase):
         graph = Graph()
         graph.add_vertex("a")
         graph.add_vertex("b")
+        graph.add_vertex("c")
         graph.add_edge(("a", "b"))
         self.assertEqual(len(graph.edges()), 1,
-                         'incorrect number of edges after adding a edges')
+                         'incorrect number of edges after adding an edge')
+        graph.add_edge(["b", "c"])
+        self.assertEqual(len(graph.edges()), 2,
+                         'incorrect number of edges after adding an edge')
