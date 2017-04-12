@@ -17,6 +17,27 @@ class SearchTestCase(unittest.TestCase):
         self.graph_dict = None
         self.graph_inst = None
 
+    def test_dfs(self):
+        """Tests depth-first search."""
+        g = self.graph_dict
+        visited = dfs(g, "a")
+        self.assertEqual(set(g.keys()), visited,
+                         'not all vertices visited')
+
+    def test_dfs_reentrant(self):
+        g = self.graph_dict
+        visited, stack = dfs_next(g, stack=["a"])
+        visited, stack = dfs_next(g, visited, stack)
+        self.assertEqual(visited, set(['a', 'd']),
+                         'after first 2 steps visited is faulty')
+        self.assertEqual(stack, ['c'],
+                         'after first 2 steps stack is faulty')
+        # go through rest
+        while stack:
+            visited, stack = dfs_next(g, visited, stack)
+        self.assertEqual(set(g.keys()), visited,
+                         'not all vertices visited (visited != all vertices)')
+
     def test_bfs_visited(self):
         """Tests breadth-first search."""
         # test with dictionary
