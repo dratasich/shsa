@@ -1,5 +1,5 @@
 import unittest
-from model.model import *
+from model.shsamodel import *
 
 class SHSAModelTestCase(unittest.TestCase):
     """Tests SHSA model."""
