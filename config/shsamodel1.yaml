@@ -1,0 +1,57 @@
+graph:
+  root: [t1, t2, t3]
+  t1: [r1, r2]
+  t2: [r3]
+  t3: [r4, r5]
+  r1: []
+  r2: [t4]
+  t4: [r6, r7]
+  r3: []
+  r4: []
+  r5: []
+  r6: []
+  r7: []
+
+# node type: 0..variable, 1..relation
+# (must match enum in shsamodel.py)
+properties:
+  root:
+    type: 0
+    need: True
+    provided: False
+  r1:
+    type: 0
+    need: False
+    provided: True
+  r2:
+    type: 0
+    need: False
+    provided: False
+  r3:
+    type: 0
+    need: False
+    provided: True
+  r4:
+    type: 0
+    need: False
+    provided: True
+  r5:
+    type: 0
+    need: False
+    provided: True
+  r6:
+    type: 0
+    need: False
+    provided: True
+  r7:
+    type: 0
+    need: False
+    provided: True
+  t1:
+    type: 1
+  t2:
+    type: 1
+  t3:
+    type: 1
+  t4:
+    type: 1

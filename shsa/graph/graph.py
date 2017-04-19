@@ -98,7 +98,7 @@ class Graph(object):
             res += str(edge) + " "
         return res
 
-    def write_dot(self, basefilename, oformat=None, highlight_edges=[]):
+    def write_dot(self, basefilename, oformat=None):
         """Saves the graph as dot-file and generates an image if oformat given.
 
         basefilename -- Name of the dot-file to generate.

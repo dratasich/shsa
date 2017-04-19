@@ -2,9 +2,9 @@
 
 __author__ = "Denise Ratasich"
 
-Nodes represent random variables or deterministic nodes (transfer
-functions). Edges represent dependence of nodes. Additionally the relation is
-encoded by through transfer function nodes.
+Nodes represent random variables or deterministic nodes which describe
+relations between variables (originally transfer functions). Edges represent
+dependence of nodes.
 
 Each node has a unique name (key). The graph object saves the connection
 between nodes (node -> adjacents). Furthermore each node can have several
@@ -21,6 +21,7 @@ Example:
 """
 
 from subprocess import call # call dot to generate .png out of .dot files
+import yaml # read graph structure and properties from config file
 
 from graph.graph import Graph
 
@@ -30,23 +31,42 @@ from graph.graph import Graph
 class SHSAModel(Graph):
     """Model class."""
 
-    def __init__(self, graph_dict=None, properties=None):
+    def __init__(self, graph_dict=None, properties=None, configfile=None):
         """Initializes a model.
 
-        The underlying graph may be initialized by setting graph_dict (see
-        Graph constructor).
+        The underlying graph must be initialized by setting graph_dict defining
+        the graph's structure (see Graph constructor). Additionally, the
+        properties of each node in the graph must be provided in a dictionary,
+        in particular to distinguish the node types.
 
         """
+        if configfile:
+            self.__init_from_file(configfile)
+        elif graph_dict and properties:
+            self.__init(graph_dict, properties)
+        else:
+            raise Exception("""either config file or graph structure &
+            properties must be provided""")
+
+    def __init(self, graph_dict, properties):
         self.__graph = Graph(graph_dict)
         """Model's structure."""
-        if properties:
-            self.__properties = properties
-        else:
-            self.__properties = {}
-            """Nodes' properties (key: node, value: dict of properties)."""
-            # for each node initialize properties
-            for n in self.__graph.vertices():
-                self.__properties[n] = property_defaults()
+        self.__properties = properties
+        """Nodes' properties (key: node, value: dict of properties)."""
+
+    def __init_from_file(self, configfile):
+        """Initializes a model based on a yaml file.
+
+        The config file must include two dictionaries `graph` and `properties`
+        defining the structure of the graph and the nodes' properties.
+
+        """
+        with open(configfile, 'r') as f:
+            try:
+                data = yaml.load(f)
+            except yaml.YAMLError as e:
+                print(e)
+            self.__init__(data['graph'], data['properties'])
 
     def properties_of(self, node):
         """Returns the properties of a node."""
@@ -91,17 +111,18 @@ class SHSAModel(Graph):
 
         """
         # bold red line
-        highlight = " [color=\"#ff0000\", penwidth=2]"
+        highlight = "color=\"#ff0000\", penwidth=2"
         gtype = "digraph"
         etype = "->"
         with open("{}.dot".format(basefilename), "w") as f:
             f.write("{} \"{}\" {{\n".format(gtype, basefilename))
             f.write("  node [fontname=\"sans-serif\"];\n")
-            for u, v in self.edges():
-                f.write(" \"{0}\" {2} \"{1}\"{3};\n".format(u, v, etype,
-                                                            highlight if (u,v)
-                                                            in highlight_edges
-                                                            else ""))
+            for u, v in self.__graph.edges():
+                f.write(" \"{0}\" {2} \"{1}\" [{3}];\n".format(u, v, etype,
+                                                               highlight if
+                                                               (u,v) in
+                                                               highlight_edges
+                                                               else ""))
             f.write("}\n")
         if oformat:
             call(["/usr/bin/dot", "-T" + oformat, "-o",
@@ -121,16 +142,7 @@ def enum(*sequential, **named):
     return type('Enum', (), enums)
 
 SHSANodeType = enum(
-    'RV', # random variable
-    'TF', # transfer function
+    'V', # variable
+    'R', # relation
 )
 """Types of nodes that are distinguished in the model."""
-
-def property_defaults():
-    """Returns the default properties of a node."""
-    defaults = {
-        'type': SHSANodeType.RV,
-        'need': False,
-        'provided': False,
-    }
-    return defaults

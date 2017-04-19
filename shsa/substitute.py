@@ -1,8 +1,10 @@
 #!/usr/bin/python
 
 from graph.graph import Graph
-from graph.search import bfs
-from model.model import *
+from graph.search import bfs, dfs, dfs_next
+from model.shsamodel import SHSAModel, SHSANodeType
+
+## graph prints ###############################################################
 
 g = { "a" : ["d"],
       "b" : ["c"],
@@ -29,15 +31,19 @@ g = {
     'tf1.2': ['speed'],
 }
 p = {
-    'speed': {'type': SHSANodeType.RV, 'label': "v",
+    'speed': {'type': SHSANodeType.V, 'label': "v",
               'need': True, 'provided': True},
-    'tf1.1': {'type': SHSANodeType.TF, 'label': "a = dv/dt"},
-    'tf1.2': {'type': SHSANodeType.TF, 'label': "v = int(a)"},
-    'acc': {'type': SHSANodeType.RV, 'label': "a",
+    'tf1.1': {'type': SHSANodeType.R, 'label': "a = dv/dt"},
+    'tf1.2': {'type': SHSANodeType.R, 'label': "v = int(a)"},
+    'acc': {'type': SHSANodeType.V, 'label': "a",
             'need': False, 'provided': True},
 }
 model = SHSAModel(g, p)
 print model
 print
-#model.write_dot("ex_shsa-model", highlight_edges=[('speed','tf1')])
-model.write_dot("ex_shsa-model", "pdf", [('speed','tf1')])
+#model.write_dot("ex_shsa-model", highlight_edges=[('speed','tf1.1')])
+#model.write_dot("ex_shsa-model", "pdf", [('speed','tf1.1')])
+model = SHSAModel(configfile="../config/shsamodel1.yaml")
+model.write_dot("ex_shsa-model-1", "pdf")
+print model
+print

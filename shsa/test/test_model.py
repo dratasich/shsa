@@ -13,9 +13,10 @@ class SHSAModelTestCase(unittest.TestCase):
                          # allowed in these tests (cannot be visited)
         }
         self.properties = {
-            'speed': {'type': SHSANodeType.RV, 'need': True, 'provided': True},
-            'tf1': {'type': SHSANodeType.TF},
-            'acc': {'type': SHSANodeType.RV, 'need': False, 'provided': True},
+            'a': {'type': SHSANodeType.V, 'need': True, 'provided': True},
+            'b': {'type': SHSANodeType.R},
+            'c': {'type': SHSANodeType.V, 'need': False, 'provided': True},
+            'd': {'type': SHSANodeType.R},
         }
 
     def tearDown(self):
@@ -23,7 +24,7 @@ class SHSAModelTestCase(unittest.TestCase):
         self.properties = None
 
     def test_setup_model(self):
-        m = SHSAModel(self.graph_dict)
+        m = SHSAModel(self.graph_dict, self.properties)
         # graph check
         g = m.graph()
         self.assertEqual(len(g.vertices()), 4,
@@ -39,15 +40,15 @@ class SHSAModelTestCase(unittest.TestCase):
                             'no default properties')
         # initialize with property dict
         m = SHSAModel(self.graph_dict, self.properties)
-        self.assertTrue(m.property_value_of('speed','need'),
+        self.assertTrue(m.property_value_of('a','need'),
                         'wrong initialized property')
-        self.assertEqual(m.property_value_of('speed','type'), SHSANodeType.RV,
+        self.assertEqual(m.property_value_of('a','type'), SHSANodeType.V,
                          'wrong initialized property')
 
     def test_set_property(self):
         m = SHSAModel(self.graph_dict, self.properties)
-        self.assertTrue(m.property_value_of('speed','need'),
+        self.assertTrue(m.property_value_of('a','need'),
                         'wrong initialized property')
-        m.set_property_to('speed', 'need', False)
-        self.assertFalse(m.property_value_of('speed','need'),
+        m.set_property_to('a', 'need', False)
+        self.assertFalse(m.property_value_of('a','need'),
                         'wrong initialized property')
