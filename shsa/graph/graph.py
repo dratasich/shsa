@@ -40,6 +40,10 @@ class Graph(object):
         """Returns adjacents of a vertex."""
         return self.__graph_dict[item]
 
+    def adjacents(self, vertex):
+        """Returns adjacents of a vertex."""
+        return self.__graph_dict[vertex]
+
     def vertices(self):
         """Returns the vertices of a graph."""
         return list(self.__graph_dict.keys())

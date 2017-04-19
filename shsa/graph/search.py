@@ -6,7 +6,7 @@ Algorithms are taken from:
 (1) Introduction to Algorithms by Cormen, Leiserson, Rivest and Stein (MIT
     Press, 2009).
 
-    Python implementation, available at
+    Derived from Python implementation, available at
     http://eddmann.com/posts/depth-first-search-and-breadth-first-search-in-python/
 
 """
