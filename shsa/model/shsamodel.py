@@ -125,12 +125,19 @@ class SHSAModel(Graph):
         with open("{}.dot".format(basefilename), "w") as f:
             f.write("{} \"{}\" {{\n".format(gtype, basefilename))
             f.write("  node [fontname=\"sans-serif\"];\n")
+            for v in self.__graph.vertices():
+                nodestyle = ""
+                if self.property_value_of(v, 'type') == SHSANodeType.R:
+                    nodestyle += "shape=box"
+                elif self.property_value_of(v, 'provided'):
+                        nodestyle += "style=filled,fillcolor=\"lightgrey\","
+                f.write(" \"{0}\" [{1}];\n".format(v, nodestyle))
             for u, v in self.__graph.edges():
+                edgestyle = ""
+                if (u,v) in highlight_edges:
+                    edgestyle = highlight
                 f.write(" \"{0}\" {2} \"{1}\" [{3}];\n".format(u, v, etype,
-                                                               highlight if
-                                                               (u,v) in
-                                                               highlight_edges
-                                                               else ""))
+                                                               edgestyle))
             f.write("}\n")
         if oformat:
             call(["/usr/bin/dot", "-T" + oformat, "-o",
