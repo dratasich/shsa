@@ -11,7 +11,7 @@ between nodes (node -> adjacents). Furthermore each node can have several
 properties. Each property has a name (key) and a value, e.g., numeric, boolean
 (node -> properties -> property-value). SHSA needs specific properties (e.g.,
 'provided') to perform self-healing. Others are used to find the best possible
-reconfiguration.
+reconfiguration, i.e., to calculate the utility.
 
 Example:
     Node 'speed' has adjacents ['distance', 'acceleration'] (see class
@@ -91,6 +91,14 @@ class SHSAModel(Graph):
     def set_property_to(self, node, prop, value):
         """Sets the value of a property of a node."""
         self.__properties[node][prop] = value
+
+    def adjacents_of(self, node):
+        """Returns all adjacents of a node in a list."""
+        return self.__graph[node]
+
+    def utility_of(self, node):
+        """Returns the utility of a relation node."""
+        return len(self.adjacents_of(node))
 
     def __str__(self):
         res = "Graph\n"
