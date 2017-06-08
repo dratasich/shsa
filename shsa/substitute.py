@@ -1,49 +1,51 @@
 #!/usr/bin/python
 
-from graph.graph import Graph
-from graph.search import bfs, dfs, dfs_next
-from model.shsamodel import SHSAModel, SHSANodeType
+from engine.shsa import SHSA
 
-## graph prints ###############################################################
-
-g = { "a" : ["d"],
-      "b" : ["c"],
-      "c" : ["b", "c", "d"],
-      "d" : ["a", "c"],
-      "e" : []
-}
-
-graph = Graph(g)
-print graph
-print
-#graph.write_dot("ex_graph")
-#graph.write_dot("ex_graph", oformat="pdf")
-
-print bfs(graph, "a")
-print
-
-## SHSA model prints ##########################################################
-
+# test SHSA substitution
 g = {
-    'speed': ['tf1.1'],
-    'tf1.1': ['acc'],
-    'acc': ['tf1.2'],
-    'tf1.2': ['speed'],
+    'root': ['t1', 't2', 't3'],
+    't1': ['r1', 'r2'],
+    't2': ['r3'],
+    't3': ['r4', 'r5'],
+    'r1': [],
+    'r2': ['t4'],
+    't4': ['r6', 'r7'],
+    'r3': [],
+    'r4': [],
+    'r5': [],
+    'r6': [],
+    'r7': [],
 }
 p = {
-    'speed': {'type': SHSANodeType.V, 'label': "v",
-              'need': True, 'provided': True},
-    'tf1.1': {'type': SHSANodeType.R, 'label': "a = dv/dt"},
-    'tf1.2': {'type': SHSANodeType.R, 'label': "v = int(a)"},
-    'acc': {'type': SHSANodeType.V, 'label': "a",
-            'need': False, 'provided': True},
+    'root': {'type': SHSANodeType.V,
+             'need': True, 'provided': False},
+    'r1': {'type': SHSANodeType.V,
+           'need': False, 'provided': True},
+    'r2': {'type': SHSANodeType.V,
+           'need': False, 'provided': False},
+    'r3': {'type': SHSANodeType.V,
+           'need': False, 'provided': True},
+    'r4': {'type': SHSANodeType.V,
+           'need': False, 'provided': True},
+    'r5': {'type': SHSANodeType.V,
+           'need': False, 'provided': True},
+    'r6': {'type': SHSANodeType.V,
+           'need': False, 'provided': True},
+    'r7': {'type': SHSANodeType.V,
+           'need': False, 'provided': True},
+    't1': {'type': SHSANodeType.R},
+    't2': {'type': SHSANodeType.R},
+    't3': {'type': SHSANodeType.R},
+    't4': {'type': SHSANodeType.R},
 }
-model = SHSAModel(g, p)
-print model
-print
-#model.write_dot("ex_shsa-model", highlight_edges=[('speed','tf1.1')])
-#model.write_dot("ex_shsa-model", "pdf", [('speed','tf1.1')])
-model = SHSAModel(configfile="../config/shsamodel1.yaml")
-model.write_dot("ex_shsa-model-1", "pdf")
-print model
-print
+#engine = SHSA(g, p)
+#engine.model().write_dot("ex_greedy", "pdf")
+engine = SHSA(configfile="../config/shsamodel1.yaml")
+engine.model().write_dot("ex_greedy", "pdf")
+variables, tree = engine.greedy('root')
+print variables
+print tree
+#r = engine.next_solution()
+#print r
+#r.write_dot("ex_st1", "pdf")
