@@ -43,9 +43,12 @@ p = {
 #engine.model().write_dot("ex_greedy", "pdf")
 engine = SHSA(configfile="../config/shsamodel1.yaml")
 engine.model().write_dot("ex_greedy", "pdf")
-variables, tree = engine.greedy('root')
-print variables
-print tree
+u, v, t = engine.dfs('root')
+
+# variables, tree = engine.greedy('root')
+# print variables
+# print tree
+
 #r = engine.next_solution()
 #print r
 #r.write_dot("ex_st1", "pdf")

@@ -20,6 +20,22 @@ class SHSA(object):
         """Returns the underlying SHSA model."""
         return self.__model
 
+    def dfs(self, node):
+        """Substitute search via DFS.
+
+        Recursive implementation.
+
+        """
+        assert False, "not yet implemented"
+
+    def bfs(self, node):
+        """Substitute search via BFS.
+
+        Recursive implementation.
+
+        """
+        assert False, "not yet implemented"
+
     def greedy(self, node):
         """Search a substitute for the given node with greedy algorithm.
 
@@ -32,7 +48,7 @@ class SHSA(object):
           is only connected to relations and vice-versa.
 
         """
-        print node
+        assert False, "not yet impelemented"
         variables = [node]
         tree = []
         # variable provided?
@@ -57,14 +73,16 @@ class SHSA(object):
             tree.extend(t)
         return variables, tree
 
-    def dfs(self, node):
-        """Optimal substitute search for a given node (depth-first search).
+    def particle_filter(self, node):
+        """Substitute search via particles.
 
         Recursive implementation.
 
         """
-        assert("shsa.dfs not yet implemented")
+        assert False, "not yet implemented"
 
+
+    # maybe needed at some point in time, when we want to change from recursive
     def dfs_next_solution(self, state=None):
         """Get next possible substitution path.
 
