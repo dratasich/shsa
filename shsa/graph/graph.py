@@ -7,6 +7,8 @@ See also https://www.python.org/doc/essays/graphs/
 
 Write/print functions from Daniel Prokesch.
 
+A possible substitute for this class would be https://networkx.readthedocs.io/
+
 """
 
 from subprocess import call # call dot to generate .png out of .dot files
@@ -19,16 +21,16 @@ class Graph(object):
 
         If no dictionary or None is given, an empty dictionary will be used.
 
-        The graph is saved in a dictionary. Vertices are keys. Successors of a
+        The graph is saved in a dictionary. Nodes are keys. Successors of a
         key are saved in a list, corresponding the value of a key.
 
         Example:
 
-        g = { "a" : ["d"],
-              "b" : ["c"],
-              "c" : ["b", "c", "d"],
-              "d" : ["a", "c"],
-              "e" : []
+        g = { 'a' : ['d'],
+              'b' : ['c'],
+              'c' : ['b', 'c', 'd'],
+              'd' : ['a', 'c'],
+              'e' : []
             }
 
         """
@@ -37,56 +39,52 @@ class Graph(object):
         self.__graph_dict = graph_dict
 
     def __getitem__(self, item):
-        """Returns adjacents of a vertex."""
+        """Returns adjacents of a node."""
         return self.__graph_dict[item]
 
-    def adjacents(self, vertex):
-        """Returns adjacents of a vertex."""
-        return self.__graph_dict[vertex]
+    def adjacents(self, node):
+        """Returns adjacents of a node."""
+        return self.__graph_dict[node]
 
-    def vertices(self):
-        """Returns the vertices of a graph."""
+    def nodes(self):
+        """Returns the nodes of a graph."""
         return list(self.__graph_dict.keys())
 
     def edges(self):
         """Returns the edges of a graph."""
         return self.__generate_edges()
 
-    def add_vertex(self, vertex):
-        """Adds a vertex with the key "vertex" if not yet exists.
+    def add_node(self, node):
+        """Adds a node with the key "node" if not yet exists.
 
-        If the vertex "vertex" is not in self.__graph_dict, a key "vertex" with
+        If the node "node" is not in self.__graph_dict, a key "node" with
         an empty list as a value is added to the dictionary. Otherwise nothing
         has to be done.
 
         """
-        if vertex not in self.__graph_dict:
-            self.__graph_dict[vertex] = []
+        if node not in self.__graph_dict:
+            self.__graph_dict[node] = []
 
-    def add_edge(self, edge):
-        """Adds a directed edge, represented by a tuple or list of two vertices.
-
-        Assumes that edge is of type tuple or list; two vertices can have
-        multiple edges.
+    def add_edge(self, u, v):
+        """Adds a directed edge.
 
         """
-        (vertex1, vertex2) = tuple(edge)
-        if vertex1 in self.__graph_dict:
-            self.__graph_dict[vertex1].append(vertex2)
+        if u in self.__graph_dict:
+            self.__graph_dict[u].append(v)
         else:
-            self.__graph_dict[vertex1] = [vertex2]
+            self.__graph_dict[u] = [v]
 
     def __generate_edges(self):
         """Generates the edges of the graph "graph".
 
-        Edges are represented as tuples with two vertices.
+        Edges are represented as tuples with two nodes.
 
         """
         edges = []
-        for vertex in self.__graph_dict:
-            for neighbour in self.__graph_dict[vertex]:
-                if {neighbour, vertex} not in edges:
-                    edges.append(tuple((vertex, neighbour)))
+        for node in self.__graph_dict:
+            for neighbour in self.__graph_dict[node]:
+                if {neighbour, node} not in edges:
+                    edges.append(tuple((node, neighbour)))
         return edges
 
     def __str__(self):
