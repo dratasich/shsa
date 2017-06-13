@@ -4,13 +4,15 @@ graph:
   t2: [r3]
   t3: [r4, r5]
   r1: []
-  r2: [t4]
+  r2: [t4, t5]
   t4: [r6, r7]
+  t5: [r8]
   r3: []
   r4: []
   r5: []
   r6: []
   r7: []
+  r8: []
 
 # node type: 0..variable, 1..relation
 # (must match enum in shsamodel.py)
@@ -47,6 +49,10 @@ properties:
     type: 0
     need: False
     provided: True
+  r8:
+    type: 0
+    need: False
+    provided: True
   t1:
     type: 1
   t2:
@@ -54,4 +60,6 @@ properties:
   t3:
     type: 1
   t4:
+    type: 1
+  t5:
     type: 1

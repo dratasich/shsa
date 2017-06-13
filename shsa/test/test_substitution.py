@@ -7,7 +7,7 @@ class SHSATestCase(unittest.TestCase):
     """Test cases to check basic requirements of the engine."""
     def test_init(self):
         engine = SHSA(configfile="test/test_substitution_m1.yaml")
-        self.assertEqual(len(engine.model().nodes()), 12,
+        self.assertEqual(len(engine.model().nodes()), 14,
                          "incorrect number of vertices")
 
 class SubstitutionTestCase(unittest.TestCase):
@@ -25,16 +25,29 @@ class SubstitutionTestCase(unittest.TestCase):
         """Test DFS with utilities.
 
         """
-        v, t = self.engine.dfs('root')
-        # example should give a number of possibilities
-        # results have to be in order of BFS
-        # TODO
+        u, t = self.engine.dfs('root')
+        self.assertEqual(len(u), len(t),
+                         "number of utilities and trees mismatch")
+        self.assertEqual(len(u), 5,
+                         "does not return all possible substitution trees")
+        # all transfer nodes adjacent to 'root' should be in at least one tree
+        t1 = False
+        t2 = False
+        t3 = False
+        for tree in t:
+            t1 = t1 or ('t1' in tree)
+            t2 = t2 or ('t2' in tree)
+            t3 = t3 or ('t3' in tree)
+        self.assertTrue(t1, "no substitution tree with 't1'")
+        self.assertTrue(t2, "no substitution tree with 't2'")
+        self.assertTrue(t3, "no substitution tree with 't3'")
 
     def test_bfs(self):
         """Test BFS with utilities.
 
         """
-        v, t = self.engine.bfs('root')
+        pass
+        #v, t = self.engine.bfs('root')
         # example should give a number of possibilities
         # results have to be in order of BFS
         # TODO
@@ -43,7 +56,8 @@ class SubstitutionTestCase(unittest.TestCase):
         """Test greedy search.
 
         """
-        v, t = self.engine.greedy('root')
+        pass
+        #v, t = self.engine.greedy('root')
         # example should give a number of possibilities
         # results have to be in order of BFS
         # TODO
