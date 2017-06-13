@@ -21,11 +21,7 @@ class SubstitutionTestCase(unittest.TestCase):
     def tearDown(self):
         self.engine = None
 
-    def test_dfs(self):
-        """Test DFS with utilities.
-
-        """
-        u, t = self.engine.dfs('root')
+    def __check_substitution_results(self, u, t):
         self.assertEqual(len(u), len(t),
                          "number of utilities and trees mismatch")
         self.assertEqual(len(u), 5,
@@ -41,6 +37,13 @@ class SubstitutionTestCase(unittest.TestCase):
         self.assertTrue(t1, "no substitution tree with 't1'")
         self.assertTrue(t2, "no substitution tree with 't2'")
         self.assertTrue(t3, "no substitution tree with 't3'")
+
+    def test_dfs(self):
+        """Test DFS with utilities.
+
+        """
+        u, t = self.engine.dfs('root')
+        self.__check_substitution_results(u, t)
 
     def test_bfs(self):
         """Test BFS with utilities.
@@ -67,6 +70,11 @@ class SubstitutionTestCase(unittest.TestCase):
         search.
 
         """
-        v, t = self.engine.particle_filter('root')
-        # example should give a number of possibilities
-        # TODO
+        u, t = self.engine.particle_filter('root')
+        self.__check_substitution_results(u, t)
+        # check with PF specific search parameters
+        pass
+        # # keep only 20% of best particles
+        # u, t = self.engine.particle_filter('root', best=0.2)
+        # # lookahead of 2 transfer functions for better search
+        # u, t = self.engine.particle_filter('root', lookahead=2)

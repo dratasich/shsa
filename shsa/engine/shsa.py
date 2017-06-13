@@ -28,7 +28,7 @@ class SHSA(object):
 
         Possible improvements:
         - if not relation: go through adjacents, append and return
-        - save solution as soon as available (anytime algorithm)
+        - save solution, globally, as soon as available (anytime algorithm)
 
         """
         # local helpers
@@ -102,10 +102,23 @@ class SHSA(object):
             tree.extend(t)
         return variables, tree
 
-    def particle_filter(self, node):
+    def particle_filter(self, node, num_particles=10, best=1.0, lookahead=0):
         """Substitute search via particles.
 
-        Recursive implementation.
+        DFS or BFS???
+
+        Returns: Possible substitutions as array of relation nodes and its
+          corresponding utilities.
 
         """
-        assert False, "not yet implemented"
+        if best < 1.0:
+            assert False, "param 'best': not yet implemented"
+        if lookahead > 0:
+            assert False, "param 'lookahead': not yet implemented"
+        # local helpers
+        variable = self.__model.property_value_of(node, 'type') == SHSANodeType.V
+        relation = self.__model.property_value_of(node, 'type') == SHSANodeType.R
+        # init
+        U = []
+        T = []
+        return U, T
