@@ -98,6 +98,8 @@ class SHSAModel(Graph):
 
     def utility_of(self, node):
         """Returns the utility of a relation node."""
+        if self.__properties[node]['type'] == SHSANodeType.V:
+            return 0
         return len(self.adjacents_of(node))
 
     def __str__(self):

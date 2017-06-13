@@ -4,7 +4,7 @@ Implements substitute search algorithm with various search methods.
 
 """
 
-from model.shsamodel import SHSAModel
+from model.shsamodel import SHSAModel, SHSANodeType
 
 class SHSA(object):
     """Self-Healing by Structural Adaptation (SHSA) engine."""
@@ -13,20 +13,49 @@ class SHSA(object):
         """Initializes the engine with a model."""
         self.__model = SHSAModel(graph, properties, configfile)
         """Knowledge base for SHSA."""
-        self.__failed_node = None
-        """Failed node for which a substitute shall be found."""
 
     def model(self):
         """Returns the underlying SHSA model."""
         return self.__model
 
     def dfs(self, node):
-        """Substitute search via DFS.
+        """Returns possible substitutes, via DFS.
 
         Recursive implementation.
 
+        Returns: Possible substitutions as array of relation nodes and its
+          corresponding utilities.
+
+        Possible improvements:
+        - if not relation: go through adjacents, append and return
+        - save solution as soon as available (anytime algorithm)
+
         """
-        assert False, "not yet implemented"
+        # local helpers
+        relation = self.__model.property_value_of(node, 'type') == SHSANodeType.R
+        # init
+        U = []
+        T = []
+        # solution at this node
+        u_node = 0 # variable node
+        if relation:
+            u_node = self.__model.utility_of(node) # relation node
+        # move on
+        for n in self.__model.adjacents_of(node):
+            u, t = self.dfs(n)
+            # add subtree solutions (if there are any)
+            if relation and len(u) > 0:
+                # add up this nodes' utility and node
+                u = [utility+u_node for utility in u]
+                t = [tree+[node] for tree in t]
+            U.extend(u)
+            T.extend(t)
+        # add current relation node
+        if relation:
+            U.append(u_node)
+            T.append([node])
+        # return substitutes from this node on
+        return U, T
 
     def bfs(self, node):
         """Substitute search via BFS.
@@ -80,37 +109,3 @@ class SHSA(object):
 
         """
         assert False, "not yet implemented"
-
-
-    # maybe needed at some point in time, when we want to change from recursive
-    def dfs_next_solution(self, state=None):
-        """Get next possible substitution path.
-
-        Assumes dfs(..) is called before the first call, which initializes the
-        state of the search (DFS variables).
-
-        Search may be executed in parallel with bfs. For each relation, start a
-        new process (see http://www.python-kurs.eu/forking.php) and execute the
-        substitution.
-
-        """
-        found = False
-        substitution_tree = {}
-        # search for next possible substitution tree or until the search ends
-        # (queue empty)
-        while ~found and self.__bfs_queue:
-            curnode = self.__bfs_queue[0]
-            if self.__model.property_value_of(curnode, 'type') == SHSANodeType.RV:
-                # TODO
-                print "(RV)",
-            print curnode
-            # traverse the search tree
-            self.__bfs_visited, self.__bfs_queue = bfs_next(
-                self.__model.graph(), self.__bfs_visited, self.__bfs_queue)
-        # check if the current tree is a valid substitution
-        # TODO
-        # calculate utility
-        # TODO
-        # update best substitute if necessary
-        # TODO
-        return self.__model
