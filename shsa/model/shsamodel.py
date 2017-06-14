@@ -102,6 +102,17 @@ class SHSAModel(Graph):
             return 0
         return len(self.adjacents_of(node))
 
+    def all_variables_provided(self, node):
+        """Returns true, if all adjacents of a relation are provided."""
+        # does not work for variables
+        if self.__properties[node]['type'] == SHSANodeType.V:
+            return False
+        # check all adjacents
+        for a in self.adjacents_of(node):
+            if not self.__properties[a]["provided"]:
+                return False
+        return True
+
     def __str__(self):
         res = "Graph\n"
         res += str(self.__graph)

@@ -15,6 +15,11 @@ print "- trees: " + str(t)
 t_best = t[u.index(max(u))]
 print "- best: " + str(t_best)
 
+print "PF"
+u, t = engine.particle_filter('root', best=0.76)
+print "- utilities: " + str(u)
+print "- trees: " + str(t)
+
 # # substitution tree with highest utility
 # g = Graph(t[u.index(max(u))])
 # g.write_dot("uc_shsamodel1_subtree", 'pdf')
