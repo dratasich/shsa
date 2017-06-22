@@ -2,12 +2,15 @@ import unittest
 from graph.graph import Graph
 from model.shsamodel import SHSAModel
 from engine.shsa import SHSA
+from engine.dfs import DepthFirstSearch
+from engine.greedy import Greedy
+from engine.particlefilter import ParticleFilter
 
 class SHSATestCase(unittest.TestCase):
     """Test cases to check basic requirements of the engine."""
     def test_init(self):
         engine = SHSA(configfile="test/test_substitution_m1.yaml")
-        self.assertEqual(len(engine.model().nodes()), 14,
+        self.assertEqual(len(engine.model.nodes()), 14,
                          "incorrect number of vertices")
 
 class SubstitutionTestCase(unittest.TestCase):
@@ -15,16 +18,10 @@ class SubstitutionTestCase(unittest.TestCase):
 
     """
 
-    def setUp(self):
-        self.engine = SHSA(configfile="test/test_substitution_m1.yaml")
-
-    def tearDown(self):
-        self.engine = None
-
     def __check_substitution_results(self, u, t):
         self.assertEqual(len(u), len(t),
                          "number of utilities and trees mismatch")
-        self.assertEqual(len(u), 5,
+        self.assertTrue(len(u) >= 5,
                          "does not return all possible substitution trees")
         # all transfer nodes adjacent to 'root' should be in at least one tree
         t1 = False
@@ -42,35 +39,24 @@ class SubstitutionTestCase(unittest.TestCase):
         """Test DFS with utilities.
 
         """
-        u, t = self.engine.dfs('root')
+        engine = DepthFirstSearch(configfile="test/test_substitution_m1.yaml")
+        u, t = engine.substitute('root')
         self.__check_substitution_results(u, t)
-
-    def test_bfs(self):
-        """Test BFS with utilities.
-
-        """
-        pass
-        #v, t = self.engine.bfs('root')
-        # example should give a number of possibilities
-        # results have to be in order of BFS
-        # TODO
 
     def test_greedy(self):
         """Test greedy search.
 
         """
-        pass
-        #v, t = self.engine.greedy('root')
-        # example should give a number of possibilities
-        # results have to be in order of BFS
-        # TODO
+        engine = Greedy(configfile="test/test_substitution_m1.yaml")
+        u, t = engine.substitute('root')
+        self.__check_substitution_results(u, t)
 
     def test_pf(self):
-        """Graph has to be searched for possibilities according to breadth-first
-        search.
+        """Graph has to be searched for possibilities via particle filter.
 
         """
-        u, t = self.engine.particle_filter('root')
+        engine = ParticleFilter(configfile="test/test_substitution_m1.yaml")
+        u, t = engine.substitute('root')
         self.__check_substitution_results(u, t)
         # check with PF specific search parameters
         pass

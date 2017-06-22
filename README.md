@@ -7,7 +7,7 @@ Self-Healing by Structural Adaptation
 
 # Tests
 
-Execute (unit-)tests by:
+Execute (unit-)tests in `./shsa/` by:
 
 ```bash
 python -m unittest discover

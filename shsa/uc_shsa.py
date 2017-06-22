@@ -1,13 +1,14 @@
 #!/usr/bin/python
+"""Test SHSA substitution."""
 
-from engine.shsa import SHSA
+from engine.dfs import DepthFirstSearch
+from engine.greedy import Greedy
+from engine.particlefilter import ParticleFilter
 from graph.graph import Graph
 
-# test SHSA substitution
-engine = SHSA(configfile="../config/shsamodel1.yaml")
-
 print "DFS"
-u, t = engine.dfs('root')
+engine = DepthFirstSearch(configfile="../config/shsamodel1.yaml")
+u, t = engine.substitute('root')
 print "- utilities: " + str(u)
 print "- trees: " + str(t)
 
@@ -16,7 +17,14 @@ t_best = t[u.index(max(u))]
 print "- best: " + str(t_best)
 
 print "PF"
-u, t = engine.particle_filter('root', best=0.76)
+engine = ParticleFilter(configfile="../config/shsamodel1.yaml")
+u, t = engine.substitute('root', best=0.76)
+print "- utilities: " + str(u)
+print "- trees: " + str(t)
+
+print "Greedy"
+engine = Greedy(configfile="../config/shsamodel1.yaml")
+u, t = engine.substitute('root')
 print "- utilities: " + str(u)
 print "- trees: " + str(t)
 
