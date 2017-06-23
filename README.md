@@ -1,11 +1,18 @@
 # shsa
 Self-Healing by Structural Adaptation
 
+
 ## Algorithms
 
 * substitution
 
-# Tests
+
+## Dependencies
+
+* [networkx](https://networkx.readthedocs.io/en/stable/install.html)
+
+
+## Tests
 
 Execute (unit-)tests in `./shsa/` by:
 
@@ -13,9 +20,9 @@ Execute (unit-)tests in `./shsa/` by:
 python -m unittest discover
 ```
 
-# Docs
+## Docs
 
-## Plots
+### Plots
 
 The graphs can be exported to dot files and further to image formats (e.g., png
 or pdf). To integrate a dot-file into a Latex document, one may use

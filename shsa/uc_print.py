@@ -36,12 +36,11 @@ g = {
     'tf1.2': ['speed'],
 }
 p = {
-    'speed': {'type': SHSANodeType.V, 'label': "v",
-              'need': True, 'provided': True},
-    'tf1.1': {'type': SHSANodeType.R, 'label': "a = dv/dt"},
-    'tf1.2': {'type': SHSANodeType.R, 'label': "v = int(a)"},
-    'acc': {'type': SHSANodeType.V, 'label': "a",
-            'need': False, 'provided': True},
+    'type': { 'speed': SHSANodeType.V, 'acc': SHSANodeType.V,
+              'tf1.1': SHSANodeType.R, 'tf1.2': SHSANodeType.R },
+    'need': { 'speed': True, 'acc': False },
+    'provided': { 'speed': True, 'acc': True },
+    'function': { 'tf1.1': "a = dv/dt", 'tf1.2': "v = int(a)" },
 }
 model = SHSAModel(g, p)
 print model

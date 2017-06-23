@@ -5,55 +5,53 @@ class SHSAModelTestCase(unittest.TestCase):
     """Tests SHSA model."""
 
     def setUp(self):
-        self.graph_dict = { 'a' : ['d'],
-              'b' : ['c'],
-              'c' : ['b', 'c', 'd'],
-              'd' : ['a', 'c'],
-              # 'e' : [] # nodes without a connection to other nodes are not
-                         # allowed in these tests (cannot be visited)
+        self.__graph_dict = { 'a': ['d'],
+              'b': ['c'],
+              'c': ['b', 'c', 'd'],
+              'd': ['a', 'c'],
+              # unconnected nodes are not allowed, no edge can be created for
+              # the networkx graph structure
+              #'e' : [],
         }
-        self.properties = {
-            'a': {'type': SHSANodeType.V, 'need': True, 'provided': True},
-            'b': {'type': SHSANodeType.R},
-            'c': {'type': SHSANodeType.V, 'need': False, 'provided': True},
-            'd': {'type': SHSANodeType.R},
+        self.__properties = {
+            'type': {'a': SHSANodeType.V, 'b': SHSANodeType.R,
+                     'c': SHSANodeType.V, 'd': SHSANodeType.R},
+            'need': {'a': True, 'c': False},
+            'provided': {'a': True, 'c': True},
         }
+        self.__filename = "test/model1.yaml"
 
     def tearDown(self):
-        self.graph_dict = None
-        self.properties = None
+        self.__graph_dict = None
+        self.__properties = None
+        self.__filename = None
 
     def test_setup_model(self):
-        m = SHSAModel(self.graph_dict, self.properties)
-        # graph check
-        g = m.graph()
-        self.assertEqual(len(g.nodes()), 4,
+        m = SHSAModel(self.__graph_dict, self.__properties)
+        self.assertEqual(len(m.nodes()), 4,
                          "incorrect number of nodes")
-        self.assertEqual(len(g.edges()), 7,
+        self.assertEqual(len(m.edges()), 7,
                          "incorrect number of edges")
         # properties check
-        p = m.properties()
-        self.assertEqual(len(p), len(g.nodes()),
-                         "not every node has properties")
-        p0 = m.properties_of(m.nodes()[0])
-        self.assertNotEqual(len(p0), 0,
-                            "no default properties")
-        # initialize with property dict
-        m = SHSAModel(self.graph_dict, self.properties)
-        self.assertTrue(m.property_value_of("a","need"),
+        self.assertTrue(m.property_value_of('a', 'need'),
                         "wrong initialized property")
-        self.assertEqual(m.property_value_of("a","type"), SHSANodeType.V,
+        self.assertEqual(m.property_value_of('a', 'type'), SHSANodeType.V,
                          "wrong initialized property")
 
+    def test_setup_model_from_file(self):
+        m = SHSAModel(configfile=self.__filename)
+        self.assertEqual(len(m.nodes()), 14,
+                         "incorrect number of nodes")
+        self.assertEqual(len(m.edges()), 13,
+                         "incorrect number of edges")
+
     def test_set_property(self):
-        m = SHSAModel(self.graph_dict, self.properties)
-        self.assertTrue(m.property_value_of("a","need"),
+        m = SHSAModel(self.__graph_dict, self.__properties)
+        self.assertTrue(m.property_value_of('a', 'need'),
                         "wrong initialized property")
-        m.set_property_to("a", "need", False)
-        self.assertFalse(m.property_value_of("a","need"),
+        m.set_property_to('a', 'need', False)
+        self.assertFalse(m.property_value_of('a', 'need'),
                         "wrong initialized property")
 
     def test_create_subtree(self):
-        m = SHSAModel(self.graph_dict, self.properties)
-        # TODO
-        self.assertTrue(False, "testcase not yet implemented")
+        raise NotImplementedError

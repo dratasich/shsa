@@ -26,8 +26,6 @@ class ParticleFilter(SHSA):
           tree.
 
         Possible improvements:
-          - Create class of this method (SHSA is the engine's interface,
-            SHSAParticleFilter the implementation).
           - Class for U,T,queues (e.g., Substitution).
 
         """
@@ -58,7 +56,7 @@ class ParticleFilter(SHSA):
             # print "queue: " + str(queues[wti])
             node = queues[wti].pop(0)
             # print "node: " + node
-            adjacents = self.model.adjacents_of(node)
+            adjacents = self.model.neighbors(node)
             adjacents_sorted = adjacents
             # local helpers
             is_variable = self.model.property_value_of(node, 'type') == SHSANodeType.V
@@ -130,8 +128,8 @@ class ParticleFilter(SHSA):
                 # print "Substitution found: " + str(T[wti])
                 # TODO: to go on tree with highest utility: sort first
                 wti = next_wti()
-            print
-            print U
-            print T
-            print queues
+            # print
+            # print U
+            # print T
+            # print queues
         return U, T

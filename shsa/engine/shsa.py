@@ -10,12 +10,12 @@ class SHSA(object):
 
     def __init__(self, graph=None, properties=None, configfile=None):
         """Initializes the engine with a model."""
-        self._model = SHSAModel(graph, properties, configfile)
+        self.__model = SHSAModel(graph, properties, configfile)
         """Knowledge base for SHSA."""
 
     def __get_model(self):
         """Returns the underlying SHSA model."""
-        return self._model
+        return self.__model
 
     model = property(__get_model)
 

@@ -36,7 +36,7 @@ class DepthFirstSearch(SHSA):
         if is_relation:
             u_node = self.model.utility_of(node) # relation node
         # move on
-        for n in self.model.adjacents_of(node):
+        for n in self.model.neighbors(node):
             u, t = self.substitute(n)
             # add subtree solutions (if there are any)
             if is_relation and len(u) > 0:

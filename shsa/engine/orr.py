@@ -24,7 +24,7 @@ class ORR(object):
         self.__model = Graph(graph)
         self.__type = {}
         self.__provided = {}
-        for n in self.__model.vertices():
+        for n in self.__model.nodes():
             self.__type[n] = properties[n]['type']
             if self.__type[n] == 'P':
                 self.__provided[n] = properties[n]['provided']

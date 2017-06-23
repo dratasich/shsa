@@ -1,5 +1,4 @@
 import unittest
-from graph.graph import Graph
 from model.shsamodel import SHSAModel
 from engine.shsa import SHSA
 from engine.dfs import DepthFirstSearch
@@ -9,7 +8,7 @@ from engine.particlefilter import ParticleFilter
 class SHSATestCase(unittest.TestCase):
     """Test cases to check basic requirements of the engine."""
     def test_init(self):
-        engine = SHSA(configfile="test/test_substitution_m1.yaml")
+        engine = SHSA(configfile="test/model1.yaml")
         self.assertEqual(len(engine.model.nodes()), 14,
                          "incorrect number of vertices")
 
@@ -17,6 +16,12 @@ class SubstitutionTestCase(unittest.TestCase):
     """Test cases to show that SHSA substitution returns correct result.
 
     """
+
+    def setUp(self):
+        self.__filename = "test/model1.yaml"
+
+    def tearDown(self):
+        self.__filename = None
 
     def __check_substitution_results(self, u, t):
         self.assertEqual(len(u), len(t),
@@ -39,7 +44,7 @@ class SubstitutionTestCase(unittest.TestCase):
         """Test DFS with utilities.
 
         """
-        engine = DepthFirstSearch(configfile="test/test_substitution_m1.yaml")
+        engine = DepthFirstSearch(configfile=self.__filename)
         u, t = engine.substitute('root')
         self.__check_substitution_results(u, t)
 
@@ -47,7 +52,7 @@ class SubstitutionTestCase(unittest.TestCase):
         """Test greedy search.
 
         """
-        engine = Greedy(configfile="test/test_substitution_m1.yaml")
+        engine = Greedy(configfile=self.__filename)
         u, t = engine.substitute('root')
         self.__check_substitution_results(u, t)
 
@@ -55,7 +60,7 @@ class SubstitutionTestCase(unittest.TestCase):
         """Graph has to be searched for possibilities via particle filter.
 
         """
-        engine = ParticleFilter(configfile="test/test_substitution_m1.yaml")
+        engine = ParticleFilter(configfile=self.__filename)
         u, t = engine.substitute('root')
         self.__check_substitution_results(u, t)
         # check with PF specific search parameters

@@ -8,10 +8,10 @@ dependence of nodes.
 
 Each node has a unique name (key). The graph object saves the connection
 between nodes (node -> adjacents). Furthermore each node can have several
-properties. Each property has a name (key) and a value, e.g., numeric, boolean
-(node -> properties -> property-value). SHSA needs specific properties (e.g.,
-'provided') to perform self-healing. Others are used to find the best possible
-reconfiguration, i.e., to calculate the utility.
+properties (or attributes). Each property has a name (key) and a value, e.g.,
+numeric, boolean (node -> properties -> property-value). SHSA needs specific
+properties (e.g., 'provided') to perform self-healing. Others are used to find
+the best possible reconfiguration, i.e., to calculate the utility.
 
 Example:
     Node 'speed' has adjacents ['distance', 'acceleration'] (see class
@@ -22,13 +22,11 @@ Example:
 
 from subprocess import call # call dot to generate .png out of .dot files
 import yaml # read graph structure and properties from config file
-
-from graph.graph import Graph
-
+import networkx as nx
 
 # model #######################################################################
 
-class SHSAModel(Graph):
+class SHSAModel(nx.DiGraph):
     """Model class."""
 
     def __init__(self, graph_dict=None, properties=None, configfile=None):
@@ -49,10 +47,10 @@ class SHSAModel(Graph):
             properties must be provided""")
 
     def __init(self, graph_dict, properties):
-        self.__graph = Graph(graph_dict)
-        """Model's structure."""
-        self.__properties = properties
-        """Nodes' properties (key: node, value: dict of properties)."""
+        edges = [(u,v) for u in graph_dict for v in graph_dict[u]]
+        super(SHSAModel, self).__init__(edges)
+        for name in properties:
+            nx.set_node_attributes(self, name, properties[name])
 
     def __init_from_file(self, configfile):
         """Initializes a model based on a yaml file.
@@ -66,59 +64,38 @@ class SHSAModel(Graph):
                 data = yaml.load(f)
             except yaml.YAMLError as e:
                 print(e)
-            self.__init__(data['graph'], data['properties'])
-
-    def properties_of(self, node):
-        """Returns the properties of a node."""
-        return self.__properties[node]
+            self.__init(data['graph'], data['properties'])
 
     def property_value_of(self, node, prop):
         """Returns the value of a property of a node."""
-        return self.__properties[node][prop]
-
-    def properties(self):
-        """Returns properties of all nodes."""
-        return self.__properties
-
-    def nodes(self):
-        """Returns all nodes of the model."""
-        return list(self.__properties.keys())
-
-    def graph(self):
-        """Returns the underlying graph."""
-        return self.__graph
+        return self.node[node][prop]
 
     def set_property_to(self, node, prop, value):
         """Sets the value of a property of a node."""
-        self.__properties[node][prop] = value
-
-    def adjacents_of(self, node):
-        """Returns all adjacents of a node in a list."""
-        return self.__graph[node]
+        self.node[node][prop] = value
 
     def utility_of(self, node):
         """Returns the utility of a relation node."""
-        if self.__properties[node]['type'] == SHSANodeType.V:
+        if self.node[node]['type'] == SHSANodeType.V:
             return 0
-        return len(self.adjacents_of(node))
+        return len(self.neighbors(node))
 
     def all_variables_provided(self, node):
         """Returns true, if all adjacents of a relation are provided."""
-        # does not work for variables
-        if self.__properties[node]['type'] == SHSANodeType.V:
+        # function not meant to be for variables
+        if self.node[node]['type'] == SHSANodeType.V:
             return False
         # check all adjacents
-        for a in self.adjacents_of(node):
-            if not self.__properties[a]["provided"]:
+        for a in self.neighbors(node):
+            if not self.node[a]["provided"]:
                 return False
         return True
 
     def __str__(self):
-        res = "Graph\n"
-        res += str(self.__graph)
-        res += "\nProperties"
-        for n in self.__properties:
-            res += "\n'" + str(n) + "': " + str(self.__properties[n])
+        res = "Nodes\n"
+        res += str(self.nodes())
+        res += "\nEdges\n"
+        res += str(self.edges())
         res += "\n"
         return res
 
@@ -138,14 +115,14 @@ class SHSAModel(Graph):
         with open("{}.dot".format(basefilename), "w") as f:
             f.write("{} \"{}\" {{\n".format(gtype, basefilename))
             f.write("  node [fontname=\"sans-serif\"];\n")
-            for v in self.__graph.vertices():
+            for v in self.nodes():
                 nodestyle = ""
                 if self.property_value_of(v, 'type') == SHSANodeType.R:
                     nodestyle += "shape=box"
                 elif self.property_value_of(v, 'provided'):
-                        nodestyle += "style=filled,fillcolor=\"lightgrey\","
+                    nodestyle += "style=filled,fillcolor=\"lightgrey\","
                 f.write(" \"{0}\" [{1}];\n".format(v, nodestyle))
-            for u, v in self.__graph.edges():
+            for u, v in self.edges():
                 edgestyle = ""
                 if (u,v) in highlight_edges:
                     edgestyle = highlight
