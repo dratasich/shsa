@@ -1,9 +1,11 @@
 import unittest
 from model.shsamodel import SHSAModel
+from model.substitution import Substitution
 from engine.shsa import SHSA
 from engine.dfs import DepthFirstSearch
 from engine.greedy import Greedy
 from engine.particlefilter import ParticleFilter
+
 
 class SHSATestCase(unittest.TestCase):
     """Test cases to check basic requirements of the engine."""
@@ -11,6 +13,7 @@ class SHSATestCase(unittest.TestCase):
         engine = SHSA(configfile="test/model1.yaml")
         self.assertEqual(len(engine.model.nodes()), 14,
                          "incorrect number of vertices")
+
 
 class SubstitutionTestCase(unittest.TestCase):
     """Test cases to show that SHSA substitution returns correct result.
@@ -69,3 +72,34 @@ class SubstitutionTestCase(unittest.TestCase):
         # u, t = self.engine.particle_filter('root', best=0.2)
         # # lookahead of 2 transfer functions for better search
         # u, t = self.engine.particle_filter('root', lookahead=2)
+
+
+class SubstitutionTestCase(unittest.TestCase):
+    """Test cases for substitution results."""
+
+    def setUp(self):
+        self.__nodes = ['t1', 't4']
+        self.__utility = 3.1
+        self.__model = SHSAModel(configfile="test/model1.yaml")
+
+    def tearDown(self):
+        self.__nodes = None
+        self.__utility = None
+        self.__model = None
+
+    def test_substitution_init(self):
+        s = Substitution(self.__model, self.__nodes, self.__utility)
+        self.assertEqual(s.utility, self.__utility,
+                         "utility does not match after initialization")
+
+    def test_substitution_tree_creation(self):
+        s = Substitution(self.__model, self.__nodes, self.__utility)
+        t = s.tree()
+        self.assertTrue(len(t.nodes()) > len(self.__nodes),
+                        "no variable nodes added")
+        s.add_node('r6') # variables have zero utility
+        self.assertEqual(s.utility, self.__utility,
+                         "utility does not match after adding node")
+        s.add('t3', 1)
+        self.assertEqual(s.utility, self.__utility + 1,
+                         "utility does not match after adding node + utility")

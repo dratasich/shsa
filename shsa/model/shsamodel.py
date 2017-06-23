@@ -27,7 +27,15 @@ import networkx as nx
 # model #######################################################################
 
 class SHSAModel(nx.DiGraph):
-    """Model class."""
+    """Model class.
+
+    Currently it is a directed graph, though the knowledge base typically the
+    relations between variables are undirected (use `Graph`), i.e., each
+    variable can be input or output. A directed graph may be more suitable for
+    final use, because relations doesn't have to be converted, for each output
+    variable a function is defined given all other connected input variables.
+
+    """
 
     def __init__(self, graph_dict=None, properties=None, configfile=None):
         """Initializes a model.
@@ -43,7 +51,7 @@ class SHSAModel(nx.DiGraph):
         elif graph_dict and properties:
             self.__init(graph_dict, properties)
         else:
-            raise Exception("""either config file or graph structure &
+            raise RuntimeError("""either config file or graph structure &
             properties must be provided""")
 
     def __init(self, graph_dict, properties):

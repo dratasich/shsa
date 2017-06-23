@@ -52,6 +52,3 @@ class SHSAModelTestCase(unittest.TestCase):
         m.set_property_to('a', 'need', False)
         self.assertFalse(m.property_value_of('a', 'need'),
                         "wrong initialized property")
-
-    def test_create_subtree(self):
-        raise NotImplementedError
