@@ -10,23 +10,18 @@ from model.substitution import Substitution
 
 print "DFS"
 engine = DepthFirstSearch(configfile="../config/shsamodel1.yaml")
-u, t = engine.substitute('root')
-print "- utilities: " + str(u)
-print "- trees: " + str(t)
-
-# create substitution tree out of t with highest utility
-t_best = t[u.index(max(u))]
-print "- best: " + str(t_best)
+S = engine.substitute('root')
+print "- results:\n" + str(S)
+print "- best: " + str(S.best())
 
 print "PF"
 engine = ParticleFilter(configfile="../config/shsamodel1.yaml")
-u, t = engine.substitute('root', best=0.76)
-print "- utilities: " + str(u)
-print "- trees: " + str(t)
+S = engine.substitute('root', best=0.76)
+print "- results:\n" + str(S)
+print "- best: " + str(S.best())
 
 # substitution tree with highest utility
-s = Substitution(engine.model, t[0], u[0])
-s.write_dot("uc_shsamodel1_substitution", 'pdf')
+S.best().write_dot("uc_shsamodel1_substitution", 'pdf')
 
 print "Greedy"
 engine = Greedy(configfile="../config/shsamodel1.yaml")

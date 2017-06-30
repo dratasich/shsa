@@ -3,8 +3,12 @@ substitute search.
 
 """
 
+import copy
+
 from engine.shsa import SHSA
 from model.shsamodel import SHSAModel, SHSANodeType
+from model.substitution import Substitution
+from model.substitutionlist import SubstitutionList
 
 class ParticleFilter(SHSA):
     """Self-Healing by Structural Adaptation (SHSA) particle filter."""
@@ -12,6 +16,13 @@ class ParticleFilter(SHSA):
     def __init__(self, graph=None, properties=None, configfile=None):
         """Initializes the search engine."""
         super(ParticleFilter, self).__init__(graph, properties, configfile)
+
+    def __next_wti(self, queues):
+        """Returns index of first tree with non-empty queue."""
+        for i in range(len(queues)):
+            if queues[i]:
+                return i
+        return -1
 
     def substitute(self, root, best=1.0, lookahead=0):
         """Substitute search via particles.
@@ -21,34 +32,22 @@ class ParticleFilter(SHSA):
         utility falls below the utility of another tree in the list. For each
         tree a queue of nodes to proceed exists.
 
-        Returns: Possible substitutions as array of relation nodes and its
-          corresponding utilities. Variables are not part of the substitution
-          tree.
-
-        Possible improvements:
-          - Class for U,T,queues (e.g., Substitution).
+        Returns: Possible substitutions.
 
         """
         # validate inputs
         assert self.model.property_value_of(root, 'type') == SHSANodeType.V, \
-        "substitution for relation"
+        "substitution for relation node not possible"
         if best <= 0 or best > 1:
             assert False, "invalid param 'best', must be within ]0,1]"
         if lookahead > 0:
             assert False, "param 'lookahead': not yet implemented"
         # init
-        wti = 0 # index of the working tree in T
-        U = [0] # utilities (one utility per tree; sum over nodes' utilities)
-        T = [[]] # (substitution) trees
-        queues = [[root]] # queues (one queue per tree)
+        S = SubstitutionList(self.model)
+        S.add_substitution() # add first (empty) working tree
+        wti = 0 # index of the working tree in S
+        queues = [[root]] # queues (one queue per substitution tree)
         visited = set()
-        # helper functions (TODO: refactor)
-        def next_wti():
-            """Returns index of first tree with non-empty queue."""
-            for i in range(len(queues)):
-                if queues[i]:
-                    return i
-            return -1
         # as long as there is an unvisited vertex
         while queues[wti]:
             # print "wti: " + str(wti)
@@ -56,15 +55,15 @@ class ParticleFilter(SHSA):
             # print "queue: " + str(queues[wti])
             node = queues[wti].pop(0)
             # print "node: " + node
+            # print "wti: " + str(wti)
             adjacents = self.model.neighbors(node)
             adjacents_sorted = adjacents
             # local helpers
             is_variable = self.model.property_value_of(node, 'type') == SHSANodeType.V
             is_relation = self.model.property_value_of(node, 'type') == SHSANodeType.R
             # update U, T, queue
-            U[wti] += self.model.utility_of(node)
             if is_relation: # add only relations to substitution trees
-                T[wti].append(node)
+                S.add_node_to(node, self.model.utility_of(node), wti)
             # sample on variable nodes
             if is_variable:
                 # draw samples from P(edge(node->n))
@@ -93,12 +92,9 @@ class ParticleFilter(SHSA):
                     # go on ... extend and create new trees if there are
                     # further relations
                     if adjacents_sorted:
-                        # copy and append adjacents (i>0) to new trees
+                        # copy to new trees (i>0)
                         for a in adjacents_sorted[1:]:
-                            U.append(U[wti])
-                            t = list(T[wti])
-                            #t.append(a)
-                            T.append(t)
+                            S.append(copy.deepcopy(S[wti]))
                             queues.append([a])
                         # extend current working tree with best adjacent
                         a = adjacents_sorted[0]
@@ -110,9 +106,7 @@ class ParticleFilter(SHSA):
                     # ... add relations to (new) tree
                     if self.model.all_variables_provided(node):
                         # copy tree
-                        U.append(U[wti])
-                        t = list(T[wti])
-                        T.append(t)
+                        S.append(copy.deepcopy(S[wti]))
                         queues.append(list(set(adjacents_sorted) - visited))
                         # at sink/leaf nodes, this produces a new tree although
                         # are no more relations
@@ -127,9 +121,8 @@ class ParticleFilter(SHSA):
                 # solution found, proceed to next tree with queue
                 # print "Substitution found: " + str(T[wti])
                 # TODO: to go on tree with highest utility: sort first
-                wti = next_wti()
+                wti = self.__next_wti(queues)
             # print
-            # print U
-            # print T
+            # print S
             # print queues
-        return U, T
+        return S

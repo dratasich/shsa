@@ -95,4 +95,5 @@ class Substitution(object):
             call(["/usr/bin/dot", "-T" + oformat, "-o",
                   basefilename + "." + oformat, basefilename + ".dot"])
 
-        
+    def __str__(self):
+        return "U = " + str(self.__utility) + " | " + str(self.__tree)

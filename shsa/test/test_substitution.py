@@ -1,6 +1,7 @@
 import unittest
 from model.shsamodel import SHSAModel
 from model.substitution import Substitution
+from model.substitutionlist import SubstitutionList
 from engine.shsa import SHSA
 from engine.dfs import DepthFirstSearch
 from engine.greedy import Greedy
@@ -22,34 +23,25 @@ class SubstitutionTestCase(unittest.TestCase):
 
     def setUp(self):
         self.__filename = "test/model1.yaml"
+        self.__solutions = [['t3'], ['t1'], ['t2'], ['t3', 't7'], ['t2', 't4'],
+                            ['t3', 't6'], ['t2', 't5']]
 
     def tearDown(self):
         self.__filename = None
 
-    def __check_substitution_results(self, u, t):
-        self.assertEqual(len(u), len(t),
-                         "number of utilities and trees mismatch")
-        self.assertTrue(len(u) >= 5,
+    def __check_substitution_results(self, S):
+        self.assertTrue(len(S.substitutions) >= 5,
                          "does not return all possible substitution trees")
-        # all transfer nodes adjacent to 'root' should be in at least one tree
-        t1 = False
-        t2 = False
-        t3 = False
-        for tree in t:
-            t1 = t1 or ('t1' in tree)
-            t2 = t2 or ('t2' in tree)
-            t3 = t3 or ('t3' in tree)
-        self.assertTrue(t1, "no substitution tree with 't1'")
-        self.assertTrue(t2, "no substitution tree with 't2'")
-        self.assertTrue(t3, "no substitution tree with 't3'")
+        # check if all solution trees are in the results
+        # TODO
 
     def test_dfs(self):
         """Test DFS with utilities.
 
         """
         engine = DepthFirstSearch(configfile=self.__filename)
-        u, t = engine.substitute('root')
-        self.__check_substitution_results(u, t)
+        S = engine.substitute('root')
+        self.__check_substitution_results(S)
 
     def test_greedy(self):
         """Test greedy search.
@@ -64,8 +56,8 @@ class SubstitutionTestCase(unittest.TestCase):
 
         """
         engine = ParticleFilter(configfile=self.__filename)
-        u, t = engine.substitute('root')
-        self.__check_substitution_results(u, t)
+        S = engine.substitute('root')
+        self.__check_substitution_results(S)
         # check with PF specific search parameters
         pass
         # # keep only 20% of best particles
@@ -103,3 +95,44 @@ class SubstitutionTestCase(unittest.TestCase):
         s.add('t3', 1)
         self.assertEqual(s.utility, self.__utility + 1,
                          "utility does not match after adding node + utility")
+
+
+class SubstitutionListTestCase(unittest.TestCase):
+    """Test cases for substitution results."""
+
+    def setUp(self):
+        self.__model = SHSAModel(configfile="test/model1.yaml")
+        self.__s1 = Substitution(self.__model, ['t2', 't4'], 3)
+        self.__s2 = Substitution(self.__model, ['t3', 't7'], 0)
+
+    def tearDown(self):
+        self.__s1 = None
+        self.__s2 = None
+
+    def test_substitution_list_init(self):
+        S = SubstitutionList(self.__model)
+
+    def test_substitution_list_extend(self):
+        S = SubstitutionList(self.__model)
+        S.extend([self.__s1, self.__s2])
+        self.assertEqual(len(S), 2,
+                         "number of substitutions mismatch after `extend`")
+        S.add_substitution(['t1'], 2)
+        self.assertEqual(len(S), 3,
+                         "number of substitutions mismatch after `new`")
+        s = S.best()
+        self.assertEqual(s.utility, 3,
+                         "utility of best substitution does not match")
+        # append a node to all substitutions
+        S.add_node_to('t5', 1)
+        self.assertEqual(len(S), 3,
+                         "number of substitutions mismatch after `append`")
+        s = S.best()
+        self.assertEqual(s.utility, 4,
+                         "utility of best substitution does not match")
+        # append node to a single substitution in the set
+        idx = 0
+        u_before = S[idx].utility
+        S.add_node_to('t5', -1, idx)
+        self.assertEqual(S[idx].utility, u_before-1,
+                         "utility of best substitution does not match")
