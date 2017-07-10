@@ -1,0 +1,73 @@
+graph:
+  dmin: [tdl, tdc, tds, tdb, tdm]  
+  laser_points: [tlb]
+  dcam_points: [tcl, tcs]
+  sonar_ranges: []
+  bumper_states: [tba]
+  map: []
+  position: []
+  motor_current: []
+  tdl: [laser_points]
+  tdc: [dcam_points]
+  tds: [sonar_ranges]
+  tdb: [bumper_states]
+  tdm: [position, map]
+  tlb: [bumper_states]
+  tcl: [laser_points]
+  tcs: [sonar_ranges]
+  tba: [motor_current]
+
+# node type: 0..variable, 1..relation
+# (must match enum in shsamodel.py)
+properties:
+
+  description:
+    dmin: "minimum distance to obstacle"
+    laser_points: "laser point cloud"
+    dcam_points: "depth-camera point cloud"
+    sonar_ranges: "sonar ranges"
+    bumper_states: "bumper states"
+    map: "map of the environment"
+    position: "position of the rover in the environment"
+    motor_current: "current / power consumption of motors"
+    tdl: "dmin = min(laser_points)"
+    tdc: "dmin = min(dcam_points)"
+    tds: "dmin = min(sonar_points)"
+    tdb: "dmin = boolean_and(bumper_states) * FLOAT_MAX"
+    tdm: "dmin = map(position)"
+    tlb: "bumper_states[c] = min(laser_points[a:b]) < threshold"
+    tcl: "laser_points = dcam_points(laser_y)"
+    tcs: "sonar_ranges = dcam_points(sonar_x[a:b], sonar_y[c:d])"
+    tba: "current = !boolean_and(bumper_states) * CURRENT_MAX"
+
+  type:
+    dmin: 0
+    laser_points: 0
+    dcam_points: 0
+    sonar_ranges: 0
+    bumper_states: 0
+    map: 0
+    position: 0
+    motor_current: 0
+    tdl: 1
+    tdc: 1
+    tds: 1
+    tdb: 1
+    tdm: 1
+    tlb: 1
+    tcl: 1
+    tcs: 1
+    tba: 1
+
+  provided:
+    dmin: False
+    laser_points: True
+    dcam_points: True
+    sonar_ranges: True
+    bumper_states: True
+    map: True
+    position: True
+    motor_current: True
+
+  need:
+    dmin: 1
