@@ -20,6 +20,7 @@ Example:
 
 """
 
+from enum import IntEnum
 from subprocess import call # call dot to generate .png out of .dot files
 import yaml # read graph structure and properties from config file
 import networkx as nx
@@ -144,18 +145,7 @@ class SHSAModel(nx.DiGraph):
 
 # properties ##################################################################
 
-def enum(*sequential, **named):
-    """Enum implementation (for Python < 3.4).
-
-    http://stackoverflow.com/questions/36932/how-can-i-represent-an-enum-in-python
-    """
-    enums = dict(zip(sequential, range(len(sequential))), **named)
-    reverse = dict((value, key) for key, value in enums.iteritems())
-    enums['reverse_mapping'] = reverse
-    return type('Enum', (), enums)
-
-SHSANodeType = enum(
-    'V', # variable
-    'R', # relation
-)
-"""Types of nodes that are distinguished in the model."""
+class SHSANodeType(IntEnum):
+    """Types of nodes that are distinguished in the model."""
+    V = 0
+    R = 1

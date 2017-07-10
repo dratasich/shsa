@@ -55,7 +55,7 @@ class Substitution(object):
         for r1 in self.__tree:
             variables = self.__model.neighbors(r1)
             for v in variables:
-                relations = filter(lambda r: r in self.__tree, self.__model.neighbors(v))
+                relations = list(filter(lambda r: r in self.__tree, self.__model.neighbors(v)))
                 if len(relations) == 1:
                     # following transfer function (passing v)
                     g.add_edge(r1, relations[0])

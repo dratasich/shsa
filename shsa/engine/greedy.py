@@ -39,7 +39,7 @@ class Greedy(SHSA):
             return variables, tree
         # make greedy choice: get relation with highest utility
         r = max(relations, key=self.__model.utility_of)
-        print r
+        print(r)
         tree.append(r)
         for v in self.__model.adjacents_of(r):
             # ignore the node where we are coming from

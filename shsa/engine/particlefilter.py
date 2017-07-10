@@ -37,7 +37,7 @@ class ParticleFilter(SHSA):
         """
         # validate inputs
         assert self.model.property_value_of(root, 'type') == SHSANodeType.V, \
-        "substitution for relation node not possible"
+            "substitution for variable node possible only"
         if best <= 0 or best > 1:
             assert False, "invalid param 'best', must be within ]0,1]"
         if lookahead > 0:

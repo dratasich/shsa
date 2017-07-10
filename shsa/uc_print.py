@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 from graph.graph import Graph
 from graph.search import bfs, dfs
@@ -14,18 +14,18 @@ g = { "a" : ["d"],
 }
 
 graph = Graph(g)
-print graph
-print
-graph.write_dot("ex_graph")
-graph.write_dot("ex_graph", oformat="pdf")
+print(graph)
+print()
+graph.write_dot("uc_print_graph-dot")
+graph.write_dot("uc_print_graph-pdf", oformat="pdf")
 
-print "BFS"
-print bfs(graph, "a")
-print
+print("BFS")
+print(bfs(graph, "a"))
+print()
 
-print "DFS"
-print dfs(graph, "a")
-print
+print("DFS")
+print(dfs(graph, "a"))
+print()
 
 ## SHSA model prints ##########################################################
 
@@ -43,11 +43,12 @@ p = {
     'function': { 'tf1.1': "a = dv/dt", 'tf1.2': "v = int(a)" },
 }
 model = SHSAModel(g, p)
-print model
-model.write_dot("ex_shsa-model", highlight_edges=[('speed','tf1.1')])
-model.write_dot("ex_shsa-model", "pdf", [('speed','tf1.1')])
+print(model)
+model.write_dot("uc_print_highlight-edges1",
+                highlight_edges=[('speed','tf1.1')])
+model.write_dot("uc_print_highlight-edges2", "pdf", [('speed','tf1.1')])
 
 # yaml example
 model = SHSAModel(configfile="../config/shsamodel1.yaml")
-model.write_dot("ex_shsa-model-1", "pdf")
-print model
+model.write_dot("uc_print_config-shsamodel1-yaml", "pdf")
+print(model)
