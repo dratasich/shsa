@@ -19,12 +19,10 @@ class SHSAModelTestCase(unittest.TestCase):
             'need': {'a': True, 'c': False},
             'provided': {'a': True, 'c': True},
         }
-        self.__filename = "test/model1.yaml"
 
     def tearDown(self):
         self.__graph_dict = None
         self.__properties = None
-        self.__filename = None
 
     def test_setup_model(self):
         m = SHSAModel(self.__graph_dict, self.__properties)
@@ -39,10 +37,17 @@ class SHSAModelTestCase(unittest.TestCase):
                          "wrong initialized property")
 
     def test_setup_model_from_file(self):
-        m = SHSAModel(configfile=self.__filename)
+        # load with classical graph dict given in the yaml
+        m = SHSAModel(configfile="test/model1.yaml")
         self.assertEqual(len(m.nodes()), 14,
                          "incorrect number of nodes")
         self.assertEqual(len(m.edges()), 13,
+                         "incorrect number of edges")
+        # load with relations instead of graph structure
+        m = SHSAModel(configfile="test/model2.yaml")
+        self.assertEqual(len(m.nodes()), 8,
+                         "incorrect number of nodes")
+        self.assertEqual(len(m.edges()), 12,
                          "incorrect number of edges")
 
     def test_set_property(self):

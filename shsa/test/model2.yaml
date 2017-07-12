@@ -1,0 +1,38 @@
+relations:
+  r1: # bidirectional
+    v1:
+      in: [v2]
+      fct: "f1(v2)"
+    v2:
+      in: [v1]
+      fct: "f2(v1)"
+  r2: # directional
+    v3:
+      in: [v4, v5]
+      fct: "f3(v4,v5)"
+  r3: # mixed, reuse variables
+    v1:
+      in: [v3, v4]
+      fct: "f5(v3, v4)"
+    v4:
+      in: [v1, v3]
+      fct: "f4(v1, v3)"
+
+properties:
+
+  type:
+    v1: 0
+    v2: 0
+    v3: 0
+    v4: 0
+    v5: 0
+    r1: 1
+    r2: 1
+    r3: 1
+
+  provided:
+    v1: True
+    v2: False
+    v3: True
+    v4: True
+    v5: True

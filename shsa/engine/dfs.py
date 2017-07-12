@@ -29,11 +29,11 @@ class DepthFirstSearch(SHSA):
         is_relation = (self.model.property_value_of(node, 'type')
                        == SHSANodeType.R)
         # init
-        S = SubstitutionList(self.model)
+        S = SubstitutionList(self.model, node)
         # solution at this node
         u_node = self.model.utility_of(node)
         # move on
-        for n in self.model.neighbors(node):
+        for n in self.model.predecessors(node):
             s = self.substitute(n)
             if is_relation:
                 s.add_node_to(node, u_node) # append this node to all trees

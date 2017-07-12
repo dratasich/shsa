@@ -16,48 +16,75 @@ class SHSATestCase(unittest.TestCase):
                          "incorrect number of vertices")
 
 
-class SubstitutionTestCase(unittest.TestCase):
+class SHSAEnginesTestCase(unittest.TestCase):
     """Test cases to show that SHSA substitution returns correct result.
 
     """
 
     def setUp(self):
-        self.__filename = "test/model1.yaml"
-        self.__solutions = [['t3'], ['t1'], ['t2'], ['t3', 't7'], ['t2', 't4'],
-                            ['t3', 't6'], ['t2', 't5']]
+        # testcases - there has to be a unique best solution. Otherwise the
+        # best-check may fail, because the engines traverse the substitution
+        # tree differently
+        self.__filename = [
+            "test/model1.yaml",
+            "test/model2.yaml",
+        ]
+        self.__root = [
+            'root',
+            'v1',
+        ]
+        self.__solutions = [
+            frozenset([
+                frozenset(['t1']),
+                frozenset(['t2']),
+                frozenset(['t3']),
+                frozenset(['t1', 't4']),
+                frozenset(['t1', 't5']),
+            ]),
+            frozenset([
+                frozenset(['r1', 'r3']),
+            ]),
+        ]
+        self.__best = [
+            {'t3', 't7'},
+            {'r1', 'r3'},
+        ]
 
     def tearDown(self):
         self.__filename = None
+        self.__root = None
+        self.__best = None
+        self.__solutions = None
 
-    def __check_substitution_results(self, S):
-        self.assertTrue(len(S.substitutions) >= 5,
-                         "does not return all possible substitution trees")
+    def __check_substitution_results(self, S, idx):
+        self.assertTrue(len(S) >= 5,
+                        "does not return all possible substitution trees")
         # check if all solution trees are in the results
-        # TODO
+        self.assertTrue(len(S.relations() & self.__solutions[idx])
+                        == len(S.relations()),
+                        "substitution result is incorrect")
+        # check best
+        # TODO - need a unique solution
+        self.assertTrue(S.best() == self.__best[idx],
+                        "best substitution is incorrect")
 
     def test_dfs(self):
         """Test DFS with utilities.
 
         """
-        engine = DepthFirstSearch(configfile=self.__filename)
-        S = engine.substitute('root')
-        self.__check_substitution_results(S)
-
-    def test_greedy(self):
-        """Test greedy search.
-
-        """
-        engine = Greedy(configfile=self.__filename)
-        u, t = engine.substitute('root')
-        self.__check_substitution_results(u, t)
+        for i in range(len(self.__filename)):
+            engine = DepthFirstSearch(configfile=self.__filename[i])
+            S = engine.substitute(self.__root[i])
+            self.__check_substitution_results(S, i)
 
     def test_pf(self):
         """Graph has to be searched for possibilities via particle filter.
 
         """
-        engine = ParticleFilter(configfile=self.__filename)
-        S = engine.substitute('root')
-        self.__check_substitution_results(S)
+        for i in range(len(self.__filename)):
+            engine = ParticleFilter(configfile=self.__filename[i])
+            S = engine.substitute(self.__root[i])
+            self.__check_substitution_results(S, i)
         # check with PF specific search parameters
         pass
         # # keep only 20% of best particles
@@ -80,15 +107,10 @@ class SubstitutionTestCase(unittest.TestCase):
         self.__model = None
 
     def test_substitution_init(self):
-        s = Substitution(self.__model, self.__nodes, self.__utility)
+        s = Substitution(self.__model, 'root', self.__nodes, self.__utility)
         self.assertEqual(s.utility, self.__utility,
                          "utility does not match after initialization")
-
-    def test_substitution_tree_creation(self):
-        s = Substitution(self.__model, self.__nodes, self.__utility)
-        t = s.tree()
-        self.assertTrue(len(t.nodes()) > len(self.__nodes),
-                        "no variable nodes added")
+        # should have no effect
         s.add_node('r6') # variables have zero utility
         self.assertEqual(s.utility, self.__utility,
                          "utility does not match after adding node")
@@ -96,24 +118,37 @@ class SubstitutionTestCase(unittest.TestCase):
         self.assertEqual(s.utility, self.__utility + 1,
                          "utility does not match after adding node + utility")
 
+    def test_substitution_tree_creation(self):
+        s = Substitution(self.__model, 'root', self.__nodes, self.__utility)
+        t = s.tree()
+        self.assertTrue(len(t.nodes()) > len(self.__nodes),
+                        "no variable nodes added")
+        self.assertTrue('root' in t.nodes(),
+                        "root node is not part of the substitution tree")
+        self.assertTrue('r1' in t.nodes() \
+                        and 'r6' in t.nodes() and 'r7' in t.nodes(),
+                        "leaf nodes are missing in the substitution tree")
 
 class SubstitutionListTestCase(unittest.TestCase):
     """Test cases for substitution results."""
 
     def setUp(self):
         self.__model = SHSAModel(configfile="test/model1.yaml")
-        self.__s1 = Substitution(self.__model, ['t2', 't4'], 3)
-        self.__s2 = Substitution(self.__model, ['t3', 't7'], 0)
+        self.__root = 'root'
+        self.__s1 = Substitution(self.__model, self.__root, ['t2', 't4'], 3)
+        self.__s2 = Substitution(self.__model, self.__root, ['t3', 't7'], 0)
 
     def tearDown(self):
+        self.__model = None
+        self.__root = None
         self.__s1 = None
         self.__s2 = None
 
     def test_substitution_list_init(self):
-        S = SubstitutionList(self.__model)
+        S = SubstitutionList(self.__model, self.__root)
 
     def test_substitution_list_extend(self):
-        S = SubstitutionList(self.__model)
+        S = SubstitutionList(self.__model, self.__root)
         S.extend([self.__s1, self.__s2])
         self.assertEqual(len(S), 2,
                          "number of substitutions mismatch after `extend`")

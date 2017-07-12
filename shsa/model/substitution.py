@@ -11,10 +11,11 @@ from model.shsamodel import SHSANodeType
 class Substitution(object):
     """Substitution class."""
 
-    def __init__(self, model, nodes=None, utility=None):
+    def __init__(self, model, root, nodes=None, utility=None):
         """Initializes a substitution."""
         self.__model = model
         """SHSA model (used to get the utility of a node)."""
+        self.__root = root
         self.__tree = []
         self.__utility = 0
         if nodes:
@@ -44,6 +45,10 @@ class Substitution(object):
         except:
             raise RuntimeError("Could not retrieve the utility (no model?)")
 
+    def relations(self):
+        """Returns set of relations involved in the substitution."""
+        return frozenset(self.__tree)
+
     def tree(self):
         """Returns a graph based on the substitution nodes.
 
@@ -52,16 +57,17 @@ class Substitution(object):
 
         """
         g = nx.DiGraph()
+        g.add_edge(self.__tree[0], self.__root) # add root node to graph
         for r1 in self.__tree:
-            variables = self.__model.neighbors(r1)
+            variables = self.__model.predecessors(r1)
             for v in variables:
-                relations = list(filter(lambda r: r in self.__tree, self.__model.neighbors(v)))
+                relations = list(filter(lambda r: r in self.__tree, self.__model.predecessors(v)))
                 if len(relations) == 1:
                     # following transfer function (passing v)
-                    g.add_edge(r1, relations[0])
+                    g.add_edge(relations[0], r1)
                 elif len(relations) == 0:
                     # leaf/sink node
-                    g.add_edge(r1, v)
+                    g.add_edge(v, r1)
                 else:
                     # more than one transfer functions for a variable in the
                     # substitution is not allowed
@@ -85,7 +91,7 @@ class Substitution(object):
             f.write("  node [fontname=\"sans-serif\"];\n")
             for n in tree.nodes():
                 nodestyle = ""
-                if len(tree.neighbors(n)) > 0:
+                if self.__model.node[n]['type'] == SHSANodeType.R:
                     nodestyle += "shape=box"
                 f.write(" \"{0}\" [{1}];\n".format(n, nodestyle))
             for u, v in tree.edges():
