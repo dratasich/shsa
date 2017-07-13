@@ -21,8 +21,19 @@ Self-Healing by Structural Adaptation
 Execute (unit-)tests in `./shsa/` by:
 
 ```bash
-python -m unittest discover
+python3 -m unittest discover
 ```
+
+Debug a failed testcase:
+
+```bash
+pdb3 test/test_model.py
+```
+
+From emacs:
+* Invoke `M-x pdb`
+* Run `pdb` like: `python3 -m pdb test/test_substitution.py`
+
 
 ## Docs
 

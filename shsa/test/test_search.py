@@ -69,3 +69,7 @@ class SearchTestCase(unittest.TestCase):
                          "not all nodes visited (visited != all nodes)")
         self.assertEqual(queue, [],
                          "not all nodes visited (queue not empty)")
+
+
+if __name__ == '__main__':
+        unittest.main()

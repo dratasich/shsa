@@ -197,3 +197,7 @@ class SubstitutionListTestCase(unittest.TestCase):
         S.add_node_to('t5', -1, idx)
         self.assertEqual(S[idx].utility, u_before-1,
                          "utility of best substitution does not match")
+
+
+if __name__ == '__main__':
+        unittest.main()

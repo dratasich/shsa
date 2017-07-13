@@ -51,3 +51,7 @@ class GraphTestCase(unittest.TestCase):
         graph.add_edge('b', 'c')
         self.assertEqual(len(graph.edges()), 2,
                          "incorrect number of edges after adding an edge")
+
+
+if __name__ == '__main__':
+        unittest.main()
