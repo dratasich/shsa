@@ -14,7 +14,7 @@ class DepthFirstSearch(SHSA):
         """Initializes the search engine."""
         super(DepthFirstSearch, self).__init__(graph, properties, configfile)
 
-    def substitute(self, node):
+    def substitute(self, node, lastnode=None):
         """Returns all possible substitutes, via DFS.
 
         Recursive implementation.
@@ -32,9 +32,10 @@ class DepthFirstSearch(SHSA):
         S = SubstitutionList(self.model, node)
         # solution at this node
         u_node = self.model.utility_of(node)
-        # move on
-        for n in self.model.predecessors(node):
-            s = self.substitute(n)
+        # move on, but do not go back where we came from
+        adjacents = set(self.model.predecessors(node)) - set([lastnode])
+        for n in adjacents:
+            s = self.substitute(n, node)
             if is_relation:
                 s.add_node_to(node, u_node) # append this node to all trees
             S.extend(s) # add the solutions from the neighbor

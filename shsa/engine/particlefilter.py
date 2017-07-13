@@ -106,7 +106,7 @@ class ParticleFilter(SHSA):
                     # stay at this tree because we are almost done
                     # however, we might go on trying to find something better
                     # ... add relations to (new) tree
-                    if self.model.provided(set(adjacents) - set(lastnodes[wti])):
+                    if self.model.provided(set(adjacents) - set([lastnodes[wti]])):
                         # copy tree
                         S.append(copy.deepcopy(S[wti]))
                         queues.append(list(set(adjacents_sorted) - visited))
