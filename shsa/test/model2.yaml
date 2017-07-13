@@ -1,38 +1,45 @@
 relations:
-  r1: # bidirectional
-    v1:
-      in: [v2]
-      fct: "f1(v2)"
-    v2:
-      in: [v1]
-      fct: "f2(v1)"
-  r2: # directional
-    v3:
-      in: [v4, v5]
-      fct: "f3(v4,v5)"
-  r3: # mixed, reuse variables
-    v1:
-      in: [v3, v4]
-      fct: "f5(v3, v4)"
-    v4:
-      in: [v1, v3]
-      fct: "f4(v1, v3)"
+  r1:
+    a:
+      in: [b, c]
+      fct: ""
+    c:
+      in: [a, b]
+      fct: ""
+  r2:
+    b:
+      in: [d, e]
+      fct: ""
+  r3:
+    c:
+      in: [f]
+      fct: ""
+  r4:
+    f:
+      in: [g]
+      fct: ""
+    g:
+      in: [f]
+      fct: ""
+  r5:
+    e:
+      in: [h, i, j]
+      fct: ""
+
 
 properties:
 
-  type:
-    v1: 0
-    v2: 0
-    v3: 0
-    v4: 0
-    v5: 0
-    r1: 1
-    r2: 1
-    r3: 1
+  # type will be generated, however 'properties' and at least 1 key have to be
+  # available
 
   provided:
-    v1: True
-    v2: False
-    v3: True
-    v4: True
-    v5: True
+    a: False
+    b: True
+    c: True
+    d: True
+    e: True
+    f: True
+    g: True
+    h: True
+    i: True
+    j: True

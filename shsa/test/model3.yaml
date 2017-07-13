@@ -1,0 +1,54 @@
+relations: # each relation is a separate graph (nodes are not further connected)
+  r1: # directional, 2 inputs
+    a:
+      in: [b, c]
+      fct: "fa(b,c)"
+  r2: # bidirectional, 2 inputs
+    d:
+      in: [e, f]
+      fct: "fd(e,f)"
+    e:
+      in: [d, f]
+      fct: "fe(d,f)"
+    f:
+      in: [d, e]
+      fct: "fd(d,e)"
+  r3: # mixed, 2 inputs
+    g:
+      in: [h, i]
+      fct: "fg(h,i)"
+    h:
+      in: [g, i]
+      fct: "fh(g,i)"
+  r4: # direct, 1 input
+    j:
+      in: [k]
+      fct: "fj(k)"
+  r5: # bidirectional, 1 input
+    l:
+      in: [m]
+      fct: "fl(m)"
+    m:
+      in: [l]
+      fct: "fm(l)"
+
+
+properties:
+
+  # type will be generated, however 'properties' and at least 1 key have to be
+  # available
+
+  provided:
+    a: False
+    b: True
+    c: True
+    d: True
+    e: True
+    f: True
+    g: True
+    h: True
+    i: True
+    j: True
+    k: True
+    l: True
+    m: True

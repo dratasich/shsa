@@ -45,9 +45,9 @@ class SHSAModelTestCase(unittest.TestCase):
                          "incorrect number of edges")
         # load with relations instead of graph structure
         m = SHSAModel(configfile="test/model2.yaml")
-        self.assertEqual(len(m.nodes()), 8,
+        self.assertEqual(len(m.nodes()), 15,
                          "incorrect number of nodes")
-        self.assertEqual(len(m.edges()), 12,
+        self.assertEqual(len(m.edges()), 18,
                          "incorrect number of edges")
 
     def test_set_property(self):

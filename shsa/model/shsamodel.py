@@ -142,7 +142,20 @@ class SHSAModel(nx.DiGraph):
 
     def property_value_of(self, node, prop):
         """Returns the value of a property of a node."""
-        return self.node[node][prop]
+        defaults = {
+            'provided': False,
+            'need': False,
+            'description': "",
+        }
+        try:
+            value = self.node[node][prop]
+        except KeyError:
+            if prop == 'type':
+                assert False, "the property 'type' should always be available"
+            raise RuntimeWarning("""Property '{}' of node '{}' is missing,
+            using default!""".format(prop, type))
+            value = defaults[prop]
+        return value
 
     def set_property_to(self, node, prop, value):
         """Sets the value of a property of a node."""
@@ -150,16 +163,17 @@ class SHSAModel(nx.DiGraph):
 
     def utility_of(self, node):
         """Returns the utility of a relation node."""
-        if self.node[node]['type'] == SHSANodeType.V:
+        if self.property_value_of(node, 'type') == SHSANodeType.V:
             return 0
+        # TODO: utility function (e.g., weighted sum of properties)
         return len(self.neighbors(node))
 
     def provided(self, nodes):
         """Returns true, if all nodes are provided."""
         for n in nodes:
-            if self.node[n]['type'] == SHSANodeType.R:
+            if self.property_value_of(n, 'type') == SHSANodeType.R:
                 raise RuntimeError("Relations have no property 'provided'.")
-            if not self.node[n]["provided"]:
+            if not self.property_value_of(n, 'provided'):
                 return False
         return True
 

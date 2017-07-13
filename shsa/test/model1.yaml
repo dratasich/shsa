@@ -44,7 +44,7 @@ properties:
   provided:
     root: False
     r1: True
-    r2: False
+    r2: True
     r3: True
     r4: True
     r5: True

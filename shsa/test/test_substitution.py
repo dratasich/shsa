@@ -28,10 +28,20 @@ class SHSAEnginesTestCase(unittest.TestCase):
         self.__filename = [
             "test/model1.yaml",
             "test/model2.yaml",
+            "test/model3.yaml",
+            "test/model3.yaml",
+            "test/model3.yaml",
+            "test/model3.yaml",
+            "test/model3.yaml",
         ]
         self.__root = [
             'root',
-            'v1',
+            'a',
+            'a',
+            'd',
+            'g',
+            'j',
+            'l',
         ]
         self.__solutions = [
             frozenset([
@@ -42,12 +52,26 @@ class SHSAEnginesTestCase(unittest.TestCase):
                 frozenset(['t1', 't5']),
             ]),
             frozenset([
+                frozenset(['r1']),
+                frozenset(['r1', 'r2']),
+                frozenset(['r1', 'r2', 'r5']),
                 frozenset(['r1', 'r3']),
+                frozenset(['r1', 'r3', 'r4']),
             ]),
+            frozenset([ frozenset(['r1']) ]),
+            frozenset([ frozenset(['r2']) ]),
+            frozenset([ frozenset(['r3']) ]),
+            frozenset([ frozenset(['r4']) ]),
+            frozenset([ frozenset(['r5']) ]),
         ]
         self.__best = [
-            {'t3', 't7'},
-            {'r1', 'r3'},
+            None, # no unique solution, so do not check
+            None,
+            {'r1'},
+            {'r2'},
+            {'r3'},
+            {'r4'},
+            {'r5'},
         ]
 
     def tearDown(self):
@@ -57,16 +81,18 @@ class SHSAEnginesTestCase(unittest.TestCase):
         self.__solutions = None
 
     def __check_substitution_results(self, S, idx):
-        self.assertTrue(len(S) >= 5,
-                        "does not return all possible substitution trees")
+        self.assertEqual(len(S.relations()), len(self.__solutions[idx]),
+                         """number of substitution trees mismatch
+                         (TC{})""".format(idx))
         # check if all solution trees are in the results
-        self.assertTrue(len(S.relations() & self.__solutions[idx])
-                        == len(S.relations()),
-                        "substitution result is incorrect")
+        self.assertEqual(len(S.relations() & self.__solutions[idx]),
+                        len(S.relations()), """substitution result (TC{}) is
+                        incorrect for model '{}' and root '{}'""".format(idx,
+                        self.__filename[idx], self.__root[idx]))
         # check best
-        # TODO - need a unique solution
-        self.assertTrue(S.best() == self.__best[idx],
-                        "best substitution is incorrect")
+        if self.__best[idx]:
+            self.assertTrue(S.best().relations() == self.__best[idx],
+                            "best substitution is incorrect (TC{})".format(idx))
 
     def test_dfs(self):
         """Test DFS with utilities.
