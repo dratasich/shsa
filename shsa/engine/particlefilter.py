@@ -47,17 +47,17 @@ class ParticleFilter(SHSA):
         S.add_substitution() # add first (empty) working tree
         wti = 0 # index of the working tree in S
         queues = [[root]] # queues (one queue per substitution tree)
-        lastnodes = [None] # nodes where we come from w.r.t. working tree
         visited = set()
         # as long as there is an unvisited vertex
         while queues[wti]:
-            # print "wti: " + str(wti)
-            # print "visited: " + str(len(visited))
-            # print "queue: " + str(queues[wti])
+            # print("wti: " + str(wti))
+            # print("visited: " + str(len(visited)))
+            # print("---")
+            # print("wti: " + str(wti))
+            # print("queue: " + str(queues[wti]))
             node = queues[wti].pop(0)
-            # print "node: " + node
-            # print "wti: " + str(wti)
-            adjacents = self.model.predecessors(node)
+            # print("node: " + node)
+            adjacents = list(set(self.model.predecessors(node)) - visited)
             adjacents_sorted = adjacents
             # local helpers
             is_variable = self.model.property_value_of(node, 'type') == SHSANodeType.V
@@ -97,7 +97,6 @@ class ParticleFilter(SHSA):
                         for a in adjacents_sorted[1:]:
                             S.append(copy.deepcopy(S[wti]))
                             queues.append([a])
-                            lastnodes.append(node)
                         # extend current working tree with best adjacent
                         a = adjacents_sorted[0]
                         queues[wti].append(a) # append adjacent to queue
@@ -106,29 +105,42 @@ class ParticleFilter(SHSA):
                     # stay at this tree because we are almost done
                     # however, we might go on trying to find something better
                     # ... add relations to (new) tree
-                    if self.model.provided(set(adjacents) - set([lastnodes[wti]])):
-                        # copy tree
-                        S.append(copy.deepcopy(S[wti]))
-                        queues.append(list(set(adjacents_sorted) - visited))
-                        lastnodes.append(node)
-                        # at sink/leaf nodes, this produces a new tree although
-                        # are no more relations
+                    if self.model.provided(adjacents_sorted):
+                        # for each next (provided) variable node 'a' create a
+                        # new tree to go on
+                        for a in adjacents_sorted:
+                            # at sink/leaf nodes, this produces a new tree
+                            # although are no more relations, so look one more
+                            # node ahead (should be a relation again)
+                            next_relations = set(self.model.predecessors(a)) \
+                                             - set([node])
+                            # upcoming relations after the provided variable
+                            # node
+                            if len(next_relations) > 0:
+                                # copy tree
+                                S.append(copy.deepcopy(S[wti]))
+                                queues.append([a])
                     else:
                         # append to current working tree
-                        queues[wti].extend(set(adjacents_sorted) - visited)
+                        queues[wti].extend(adjacents_sorted)
+                else:
+                    assert False, "node is not a variable nor a relation?!"
+            else:
+                # this should not happen, because we add only unprocessed nodes
+                # to the queues
+                assert False, "processing a visited node '{}'".format(node)
             # sort solutions
             # T = [t for (u,t) in sorted(zip(U,T), reverse=True)]
             # U = sorted(U, reverse=True)
             # TODO: keep best trees
-            # set last processed node
-            lastnodes[wti] = node
             # change to another working tree
             if not queues[wti]:
                 # solution found, proceed to next tree with queue
                 # print "Substitution found: " + str(T[wti])
                 # TODO: to go on tree with highest utility: sort first
                 wti = self.__next_wti(queues)
-            # print
-            # print S
-            # print queues
+            # print()
+            # print(S)
+            # print("queues" + str(queues))
+        assert visited != set(self.model.nodes()), "unvisited nodes: {}".format(visited)
         return S

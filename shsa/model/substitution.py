@@ -58,10 +58,16 @@ class Substitution(object):
         """
         g = nx.DiGraph()
         g.add_edge(self.__tree[0], self.__root) # add root node to graph
+        visited = set(self.__root) # exclude added variables
         for r1 in self.__tree:
-            variables = self.__model.predecessors(r1)
+            variables = set(self.__model.predecessors(r1)) - visited
             for v in variables:
-                relations = list(filter(lambda r: r in self.__tree, self.__model.predecessors(v)))
+                visited.add(v)
+                # check connected relation:
+                # - should be part of the tree
+                # - exclude relation where we are coming from (r!=r1)
+                relations = list(filter(lambda r: r in self.__tree and r != r1,
+                                        self.__model.predecessors(v)))
                 if len(relations) == 1:
                     # following transfer function (passing v)
                     g.add_edge(relations[0], r1)
