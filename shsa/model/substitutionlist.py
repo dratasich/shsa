@@ -22,7 +22,7 @@ class SubstitutionList(list):
 
     def best(self):
         """Returns substitution with highest utility."""
-        if len(self) == 0:
+        if len(self) == 0: # no substitution results
             return None
         idx = 0
         u_max = self[idx].utility

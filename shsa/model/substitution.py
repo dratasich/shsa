@@ -56,6 +56,8 @@ class Substitution(object):
         Note, assumes only relations are part of the tree.
 
         """
+        if len(self.__tree) == 0:
+            raise RuntimeWarning("No solution found (substitution is empty).")
         g = nx.DiGraph()
         g.add_edge(self.__tree[0], self.__root) # add root node to graph
         visited = set(self.__root) # exclude added variables
