@@ -104,6 +104,10 @@ class SHSAEnginesTestCase(SHSATestCase):
                  frozenset(['r1', 'r2', 'r5']),
                  frozenset(['r1', 'r3']),
                  frozenset(['r1', 'r3', 'r4']),
+                 frozenset(['r1', 'r2', 'r3']),
+                 frozenset(['r1', 'r2', 'r3', 'r4']),
+                 frozenset(['r1', 'r2', 'r3', 'r5']),
+                 frozenset(['r1', 'r2', 'r3', 'r4', 'r5']),
              ])),
             ("test/model2.yaml", 'b',
              frozenset([
