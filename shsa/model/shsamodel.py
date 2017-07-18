@@ -168,6 +168,18 @@ class SHSAModel(nx.DiGraph):
         # TODO: utility function (e.g., weighted sum of properties)
         return len(self.neighbors(node))
 
+    #
+    # getters for SHSA properties
+    #
+
+    def is_variable(self, node):
+        """Returns true if the given node is of type variable."""
+        return (self.property_value_of(node, 'type') == SHSANodeType.V)
+
+    def is_relation(self, node):
+        """Returns true if the given node is of type relation."""
+        return (self.property_value_of(node, 'type') == SHSANodeType.R)
+
     def provided(self, nodes):
         """Returns true, if all nodes are provided."""
         for n in nodes:
