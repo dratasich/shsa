@@ -3,9 +3,12 @@ search to find substitutes.
 
 """
 
+import itertools
+
 from engine.shsa import SHSA
 from model.shsamodel import SHSAModel, SHSANodeType
 from model.substitutionlist import SubstitutionList
+from model.substitution import Substitution
 
 class DepthFirstSearch(SHSA):
     """Self-Healing by Structural Adaptation (SHSA) engine."""
@@ -25,22 +28,39 @@ class DepthFirstSearch(SHSA):
         - save solution, globally, as soon as available (anytime algorithm)
 
         """
-        # local helpers
-        is_relation = (self.model.property_value_of(node, 'type')
-                       == SHSANodeType.R)
         # init
-        S = SubstitutionList(self.model, node)
+        S = SubstitutionList(self.model, node) # empty
         # solution at this node
         u_node = self.model.utility_of(node)
         # move on, but do not go back where we came from
+        solutions = [] # list of substitution lists of adjacents
         adjacents = set(self.model.predecessors(node)) - set([lastnode])
         for n in adjacents:
             s = self.substitute(n, node)
-            if is_relation:
-                s.add_node_to(node) # append this node to all trees
-            S.extend(s) # add the solutions from the neighbor
-        # add relation nodes only
-        if is_relation:
-            S.add_substitution([node])
+            if len(s) > 0:
+                solutions.append(s) # save solution of each adjacent separately
+        # depending on the type of node the solutions are combined or just added
+        if self.model.is_relation(node):
+            # create combinations (take not / take for each adjacent)
+            combs = list(itertools.product([0,1], repeat=len(solutions)))
+            for c in combs:
+                # apply combination
+                combsol = list(itertools.compress(solutions, c))
+                if len(combsol) == 0: # taking none is also possible
+                    S.add_substitution() # add empty one
+                else:
+                    # because these are lists, we have to create the product
+                    # again to combine the individual substitution elements
+                    combs2 = list(itertools.product(*combsol))
+                    for c2 in combs2:
+                        # merge substitutions from the combination
+                        combsub = itertools.chain.from_iterable(c2)
+                        S.append(Substitution(self.model, node, combsub))
+            # add current relation node to all substitutions
+            S.add_node_to(node)
+        elif self.model.is_variable(node):
+            # simply add returned solutions
+            for s in solutions:
+                S.extend(s)
         # return substitutes from this node on
         return S
