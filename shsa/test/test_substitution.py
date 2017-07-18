@@ -10,28 +10,27 @@ class SubstitutionTestCase(unittest.TestCase):
 
     def setUp(self):
         self.__nodes = ['t1', 't4']
-        self.__utility = 3.1
         self.__model = SHSAModel(configfile="test/model1.yaml")
 
     def tearDown(self):
         self.__nodes = None
-        self.__utility = None
         self.__model = None
 
     def test_init(self):
-        s = Substitution(self.__model, 'root', self.__nodes, self.__utility)
-        self.assertEqual(s.utility, self.__utility,
-                         "utility does not match after initialization")
-        # should have no effect
-        s.add_node('r6') # variables have zero utility
-        self.assertEqual(s.utility, self.__utility,
-                         "utility does not match after adding node")
-        s.add('t3', 1)
-        self.assertEqual(s.utility, self.__utility + 1,
-                         "utility does not match after adding node + utility")
+        s = Substitution(self.__model, 'root', self.__nodes)
+        self.assertEqual(len(s), 2,
+                         "number of nodes mismatch after init")
+        self.assertEqual(set(self.__nodes), s.relations(),
+                         "nodes mismatch after init")
+        s.append('t2')
+        self.assertEqual(len(s), 3,
+                         "number of nodes mismatch after append")
+        s.extend(['t3', 't5'])
+        self.assertEqual(len(s), 5,
+                         "number of nodes mismatch after extend")
 
     def test_tree_creation(self):
-        s = Substitution(self.__model, 'root', self.__nodes, self.__utility)
+        s = Substitution(self.__model, 'root', self.__nodes)
         t = s.tree()
         self.assertTrue(len(t.nodes()) > len(self.__nodes),
                         "no variable nodes added")
@@ -47,8 +46,8 @@ class SubstitutionListTestCase(unittest.TestCase):
     def setUp(self):
         self.__model = SHSAModel(configfile="test/model1.yaml")
         self.__root = 'root'
-        self.__s1 = Substitution(self.__model, self.__root, ['t2', 't4'], 3)
-        self.__s2 = Substitution(self.__model, self.__root, ['t3', 't7'], 0)
+        self.__s1 = Substitution(self.__model, self.__root, ['t1', 't4'])
+        self.__s2 = Substitution(self.__model, self.__root, ['t3'])
 
     def tearDown(self):
         self.__model = None
@@ -58,35 +57,48 @@ class SubstitutionListTestCase(unittest.TestCase):
 
     def test_list_init(self):
         S = SubstitutionList(self.__model, self.__root)
+        self.assertEqual(len(S), 0,
+                         "number of substitutions mismatch after `new`")
+        S = SubstitutionList(self.__model, self.__root, [self.__s1, self.__s2])
+        self.assertEqual(len(S), 2,
+                         "number of substitutions mismatch after `new`")
 
     def test_list_extend(self):
         S = SubstitutionList(self.__model, self.__root)
         S.extend([self.__s1, self.__s2])
         self.assertEqual(len(S), 2,
                          "number of substitutions mismatch after `extend`")
-        S.add_substitution(['t1'], 2)
+        S.add_substitution(['t2'])
         self.assertEqual(len(S), 3,
                          "number of substitutions mismatch after `new`")
-        self.assertEqual(S[0].utility, 3,
-                         "utility of first substitution does not match")
         # append a node to all substitutions
-        S.add_node_to('t5', 1)
-        self.assertEqual(len(S), 3,
-                         "number of substitutions mismatch after `add node`")
-        self.assertEqual(S[-1].utility, 3,
-                         "utility of last substitution does not match")
+        S = SubstitutionList(self.__model, self.__root, [self.__s1, self.__s2])
+        S.add_node_to('t5')
+        self.assertEqual(len(S), 2,
+                         "number of substitutions mismatch after `add_node_to`")
+        self.assertEqual(len(S[0]), 3,
+                         "number of nodes mismatch after `add_node_to`")
+        self.assertEqual(len(S[1]), 2,
+                         "number of nodes mismatch after `add_node_to`")
         # append node to a single substitution in the set
-        idx = 0
-        u_before = S[idx].utility
-        S.add_node_to('t5', -1, idx)
-        self.assertEqual(S[idx].utility, u_before-1,
-                         """utility of substitution[{}] does not
-                         match""".format(idx))
+        S.add_node_to('t2', 0)
+        self.assertEqual(len(S[0]), 4,
+                         "number of nodes mismatch after `add_node_to`")
+        self.assertEqual(len(S[1]), 2,
+                         "number of nodes mismatch after `add_node_to`")
+
+    def test_print(self):
+        S = SubstitutionList(self.__model, self.__root, [self.__s1, self.__s2])
+        S.__str__() # may raise an error if it doesn't work
 
     def test_best(self):
+        """Tests for correct utility and if best substitution is returned."""
         S = SubstitutionList(self.__model, self.__root)
-        S.extend([self.__s1, self.__s2])
-        self.assertEqual(S.best(), self.__s1,
+        S.add_substitution(['t1', 't4'])
+        S.add_substitution(['t1', 't5'])
+        S.add_substitution(['t2'])
+        S.add_substitution(['t3'])
+        self.assertEqual(S.best().relations(), set(['t2']),
                          "does not return best substitution")
 
 

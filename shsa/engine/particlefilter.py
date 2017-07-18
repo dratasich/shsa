@@ -64,7 +64,7 @@ class ParticleFilter(SHSA):
             is_relation = self.model.property_value_of(node, 'type') == SHSANodeType.R
             # update U, T, queue
             if is_relation: # add only relations to substitution trees
-                S.add_node_to(node, self.model.utility_of(node), wti)
+                S.add_node_to(node, wti)
             # sample on variable nodes
             if is_variable:
                 # draw samples from P(edge(node->n))

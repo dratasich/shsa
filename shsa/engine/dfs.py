@@ -37,10 +37,10 @@ class DepthFirstSearch(SHSA):
         for n in adjacents:
             s = self.substitute(n, node)
             if is_relation:
-                s.add_node_to(node, u_node) # append this node to all trees
+                s.add_node_to(node) # append this node to all trees
             S.extend(s) # add the solutions from the neighbor
         # add relation nodes only
         if is_relation:
-            S.add_substitution([node], u_node)
+            S.add_substitution([node])
         # return substitutes from this node on
         return S

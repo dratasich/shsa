@@ -8,46 +8,31 @@ from subprocess import call # call dot to generate .png out of .dot files
 
 from model.shsamodel import SHSANodeType
 
-class Substitution(object):
+class Substitution(list):
     """Substitution class."""
 
-    def __init__(self, model, root, nodes=None, utility=None):
+    def __init__(self, model, root, *args, **kwargs):
         """Initializes a substitution."""
+        super(Substitution, self).__init__(*args, **kwargs)
         self.__model = model
         """SHSA model (used to get the utility of a node)."""
         self.__root = root
-        self.__tree = []
-        self.__utility = 0
-        if nodes:
-            self.__tree = nodes
-        if utility:
-            self.__utility = utility
-        if utility and not nodes:
-            raise RuntimeError("Only utilities specified without nodes")
 
     def __get_utility(self):
-        return self.__utility
+        """Returns the sum of node-utilities.
+
+        Could be improved by saving the overall utility when adding nodes,
+        i.e., utility could be maintained. However, each list extension has to
+        be overloaded.
+
+        """
+        return sum([self.__model.utility_of(n) for n in self])
 
     utility = property(__get_utility)
 
-    def add(self, node, utility):
-        """Adds a node and its utility to the substitution."""
-        if self.__model.node[node]['type'] == SHSANodeType.V:
-            raise RuntimeError("Variable nodes are not allowed to be added")
-        self.__tree.append(node)
-        self.__utility += utility
-
-    def add_node(self, node):
-        """Adds a node and its utility to the substitution."""
-        self.__tree.append(node)
-        try:
-            self.__utility += self.__model.utility_of(node)
-        except:
-            raise RuntimeError("Could not retrieve the utility (no model?)")
-
     def relations(self):
         """Returns set of relations involved in the substitution."""
-        return frozenset(self.__tree)
+        return frozenset(self)
 
     def tree(self):
         """Returns a graph based on the substitution nodes.
@@ -56,19 +41,19 @@ class Substitution(object):
         Note, assumes only relations are part of the tree.
 
         """
-        if len(self.__tree) == 0:
-            raise RuntimeWarning("No solution found (substitution is empty).")
+        if len(self) == 0:
+            raise RuntimeWarning("Substitution is empty.")
         g = nx.DiGraph()
-        g.add_edge(self.__tree[0], self.__root) # add root node to graph
+        g.add_edge(self[0], self.__root) # add root node to graph
         visited = set(self.__root) # exclude added variables
-        for r1 in self.__tree:
+        for r1 in self:
             variables = set(self.__model.predecessors(r1)) - visited
             for v in variables:
                 visited.add(v)
                 # check connected relation:
                 # - should be part of the tree
                 # - exclude relation where we are coming from (r!=r1)
-                relations = list(filter(lambda r: r in self.__tree and r != r1,
+                relations = list(filter(lambda r: r in self and r != r1,
                                         self.__model.predecessors(v)))
                 if len(relations) == 1:
                     # following transfer function (passing v)
@@ -110,4 +95,4 @@ class Substitution(object):
                   basefilename + "." + oformat, basefilename + ".dot"])
 
     def __str__(self):
-        return "U = " + str(self.__utility) + " | " + str(self.__tree)
+        return "U = " + str(self.utility) + " | " + str(list(self))
