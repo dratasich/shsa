@@ -81,7 +81,7 @@ class ORR(object):
                             S.extend(s)
                             T.extend(t)
                         else:
-                            provided = false
+                            provided = False
                             break # no substiute for n
                     else:
                         # property is provided (without substitution)
