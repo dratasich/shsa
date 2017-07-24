@@ -9,7 +9,7 @@ class SubstitutionTestCase(unittest.TestCase):
     """Test cases for substitution results."""
 
     def setUp(self):
-        self.__nodes = ['t2', 't4']
+        self.__nodes = ['t1', 't4']
         self.__model = SHSAModel(configfile="test/model1.yaml")
 
     def tearDown(self):
@@ -22,11 +22,22 @@ class SubstitutionTestCase(unittest.TestCase):
                          "number of nodes mismatch after init")
         self.assertEqual(set(self.__nodes), s.relations(),
                          "nodes mismatch after init")
-        # check tree to see if model and root is correctly initialized
-        t = s.tree()
-        self.assertEqual(set(t.nodes()),
-                         {'root', 't2', 't4', 'r3', 'r6', 'r7'},
+        self.assertEqual(s.model, self.__model, "model mismatch")
+        self.assertEqual(s.root, 'root', "root mismatch")
+        # init without model and root in constructor
+        s = Substitution(self.__nodes)
+        self.assertEqual(len(s), 2,
                          "number of nodes mismatch after init")
+        self.assertEqual(s.model, None, "model mismatch")
+        self.assertEqual(s.root, None, "root mismatch")
+        # init model and root later
+        s.model = self.__model
+        s.root = 'root'
+        self.assertEqual(s.model, self.__model, "model mismatch")
+        self.assertEqual(s.root, 'root', "root mismatch")
+
+    def test_list(self):
+        s = Substitution(self.__nodes)
         # check if the substitution can be extended
         s.append('t2')
         self.assertEqual(len(s), 3,
@@ -34,26 +45,36 @@ class SubstitutionTestCase(unittest.TestCase):
         s.extend(['t3', 't5'])
         self.assertEqual(len(s), 5,
                          "number of nodes mismatch after extend")
-        # without model and root in constructor
-        s = Substitution(self.__nodes)
-        self.assertEqual(len(s), 2,
-                         "number of nodes mismatch after init")
-        # init later
-        s.model = self.__model
-        s.root = 'root'
-        self.assertEqual(len(s), 2,
-                         "number of nodes mismatch after init")
 
     def test_tree_creation(self):
         s = Substitution(self.__nodes, model=self.__model, root='root')
-        t = s.tree()
+        t, vin = s.tree(collapse_variables=False)
         self.assertTrue(len(t.nodes()) > len(self.__nodes),
                         "no variable nodes added")
         self.assertTrue('root' in t.nodes(),
                         "root node is not part of the substitution tree")
-        self.assertTrue('r3' in t.nodes()
-                        and 'r6' in t.nodes() and 'r7' in t.nodes(),
-                        "leaf nodes are missing in the substitution tree")
+        self.assertEqual(set(vin), {'r1', 'r6', 'r7'},
+                        "wrong variable source nodes")
+        # model with more directions on edges
+        s = Substitution(['r4', 'r3'],
+                         model=SHSAModel(configfile="test/model_p1.yaml"),
+                         root='c')
+        t, vin = s.tree()
+        self.assertEqual(set(t.edges()),
+                         {('g', 'r4'), ('r4', 'r3'), ('r3', 'c')},
+                         "wrong substitution tree (edge mismatch)")
+        self.assertEqual(set(vin), {'g'},
+                         "wrong variable source nodes")
+        # order of list should not matter
+        s = Substitution(['r3', 'r4'],
+                         model=SHSAModel(configfile="test/model_p1.yaml"),
+                         root='c')
+        t, vin = s.tree()
+        self.assertEqual(set(t.edges()),
+                         {('g', 'r4'), ('r4', 'r3'), ('r3', 'c')},
+                         "wrong substitution tree (edge mismatch)")
+        self.assertEqual(set(vin), {'g'},
+                         "wrong variable source nodes")
 
 
 class SubstitutionListTestCase(unittest.TestCase):

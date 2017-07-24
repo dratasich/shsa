@@ -33,7 +33,7 @@ properties:
   # available
 
   provided:
-    a: False
+    a: True
     b: True
     c: True
     d: True
