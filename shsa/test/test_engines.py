@@ -22,7 +22,7 @@ class SHSATestCase(unittest.TestCase):
         self.__tc = None
         # default index mapping (only the given keys are allowed, the index is
         # subject to change)
-        self.__tcidx = self.__tcindex_default();
+        self.__tcidx = self.__tcindex_default()
 
     def tearDown(self):
         self.__tc = None
@@ -57,7 +57,7 @@ class SHSATestCase(unittest.TestCase):
 
     def substitute_dfs(self):
         """Returns testcase results of depth-first search."""
-        if not self.testcases: # no testcases
+        if not self.testcases:  # no testcases
             return
         results = []
         for i in range(len(self.testcases)):
@@ -69,7 +69,7 @@ class SHSATestCase(unittest.TestCase):
 
     def substitute_pf(self):
         """Returns testcase results of particle filter."""
-        if not self.__tc: # no testcases
+        if not self.__tc:  # no testcases
             return
         results = []
         for i in range(len(self.testcases)):
@@ -127,11 +127,11 @@ class SHSAEnginesTestCase(SHSATestCase):
              frozenset([
                  frozenset(['r4']),
              ])),
-            ("test/model3.yaml", 'a', frozenset([ frozenset(['r1']) ])),
-            ("test/model3.yaml", 'd', frozenset([ frozenset(['r2']) ])),
-            ("test/model3.yaml", 'g', frozenset([ frozenset(['r3']) ])),
-            ("test/model3.yaml", 'j', frozenset([ frozenset(['r4']) ])),
-            ("test/model3.yaml", 'l', frozenset([ frozenset(['r5']) ])),
+            ("test/model3.yaml", 'a', frozenset([frozenset(['r1'])])),
+            ("test/model3.yaml", 'd', frozenset([frozenset(['r2'])])),
+            ("test/model3.yaml", 'g', frozenset([frozenset(['r3'])])),
+            ("test/model3.yaml", 'j', frozenset([frozenset(['r4'])])),
+            ("test/model3.yaml", 'l', frozenset([frozenset(['r5'])])),
         ]
 
     def __check_results(self, S, no):
@@ -141,22 +141,22 @@ class SHSAEnginesTestCase(SHSATestCase):
                          """number of substitution trees mismatch
                          (TC{})""".format(no))
         # check if all solution trees are in the results
-        self.assertEqual(len(S.relations() \
+        self.assertEqual(len(S.relations()
                              & self.testcases[no][self.tcindex['result']]),
-                        len(S.relations()),
+                         len(S.relations()),
                          """substitution result wrong (TC{})""".format(no))
         # no double entries
-        for x,y in itertools.combinations(S, 2):
+        for x, y in itertools.combinations(S, 2):
             self.assertNotEqual(set(x), set(y),
                                 "double entries in result (TC{})".format(no))
 
     def test_dfs(self):
-        results = self.substitute_dfs() # execute testcases
+        results = self.substitute_dfs()  # execute testcases
         for i in range(len(results)):
             self.__check_results(results[i], i)
 
     def test_pf(self):
-        results = self.substitute_pf() # execute testcases
+        results = self.substitute_pf()  # execute testcases
         for i in range(len(results)):
             self.__check_results(results[i], i)
 
@@ -178,12 +178,12 @@ class SHSAUtilityTestCase(SHSATestCase):
         raise NotImplementedError("""Test case - TODO - check utility""")
 
     def test_dfs(self):
-        results = self.substitute_dfs() # execute testcases
+        results = self.substitute_dfs()  # execute testcases
         for i in range(len(results)):
             self.__check_results(results[i], i)
 
     def test_pf(self):
-        results = self.substitute_pf() # execute testcases
+        results = self.substitute_pf()  # execute testcases
         for i in range(len(results)):
             self.__check_results(results[i], i)
 
@@ -214,18 +214,18 @@ class SHSAProvidedTestCase(SHSATestCase):
                          """number of substitution trees mismatch
                          (TC{})""".format(no))
         # check if all solution trees are in the results
-        self.assertEqual(len(S.relations() \
+        self.assertEqual(len(S.relations()
                              & self.testcases[no][self.tcindex['result']]),
-                        len(S.relations()),
+                         len(S.relations()),
                          """substitution result wrong (TC{})""".format(no))
 
     def test_dfs(self):
-        results = self.substitute_dfs() # execute testcases
+        results = self.substitute_dfs()  # execute testcases
         for i in range(len(results)):
             self.__check_results(results[i], i)
 
     def test_pf(self):
-        results = self.substitute_pf() # execute testcases
+        results = self.substitute_pf()  # execute testcases
         for i in range(len(results)):
             self.__check_results(results[i], i)
 

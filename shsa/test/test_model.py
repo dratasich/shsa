@@ -1,17 +1,19 @@
 import unittest
 from model.shsamodel import *
 
+
 class SHSAModelTestCase(unittest.TestCase):
     """Tests SHSA model."""
 
     def setUp(self):
-        self.__graph_dict = { 'a': ['d'],
-              'b': ['c'],
-              'c': ['b', 'c', 'd'],
-              'd': ['a', 'c'],
-              # unconnected nodes are not allowed, no edge can be created for
-              # the networkx graph structure
-              #'e' : [],
+        self.__graph_dict = {
+            'a': ['d'],
+            'b': ['c'],
+            'c': ['b', 'c', 'd'],
+            'd': ['a', 'c'],
+            # unconnected nodes are not allowed, no edge can be created for the
+            # networkx graph structure
+            # 'e' : [],
         }
         self.__properties = {
             'type': {'a': SHSANodeType.V, 'b': SHSANodeType.R,
@@ -56,7 +58,7 @@ class SHSAModelTestCase(unittest.TestCase):
                         "wrong initialized property")
         m.set_property_to('a', 'need', False)
         self.assertFalse(m.property_value_of('a', 'need'),
-                        "wrong initialized property")
+                         "wrong initialized property")
 
 
 if __name__ == '__main__':

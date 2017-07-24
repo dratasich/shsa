@@ -12,6 +12,7 @@ import networkx as nx
 from model.shsamodel import SHSANodeType
 from model.substitution import Substitution
 
+
 class SubstitutionList(UserList):
     """Substitution list class."""
 
@@ -39,7 +40,7 @@ class SubstitutionList(UserList):
 
     def best(self):
         """Returns substitution with highest utility."""
-        if len(self) == 0: # no substitution results
+        if len(self) == 0:  # no substitution results
             return None
         idx = 0
         u_max = self[idx].utility
@@ -61,7 +62,7 @@ class SubstitutionList(UserList):
     def add_node_to(self, node, idx=None):
         """Append the node and utility to all substitutions if idx is None,
         otherwise add it to the substitution with index `idx`."""
-        if idx in range(0,len(self)):
+        if idx in range(0, len(self)):
             self[idx].append(node)
         else:
             for s in self:

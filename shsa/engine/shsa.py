@@ -5,6 +5,7 @@
 
 from model.shsamodel import SHSAModel, SHSANodeType
 
+
 class SHSA(object):
     """Self-Healing by Structural Adaptation (SHSA) engine."""
 

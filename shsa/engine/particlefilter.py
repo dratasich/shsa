@@ -10,6 +10,7 @@ from model.shsamodel import SHSAModel, SHSANodeType
 from model.substitution import Substitution
 from model.substitutionlist import SubstitutionList
 
+
 class ParticleFilter(SHSA):
     """Self-Healing by Structural Adaptation (SHSA) particle filter."""
 
@@ -44,9 +45,9 @@ class ParticleFilter(SHSA):
             assert False, "param 'lookahead': not yet implemented"
         # init
         S = SubstitutionList()
-        S.add_substitution() # add first (empty) working tree
-        wti = 0 # index of the working tree in S
-        queues = [[root]] # queues (one queue per substitution tree)
+        S.add_substitution()  # add first (empty) working tree
+        wti = 0  # index of the working tree in S
+        queues = [[root]]  # queues (one queue per substitution tree)
         visited = set()
         # as long as there is an unvisited vertex
         while queues[wti]:
@@ -59,37 +60,36 @@ class ParticleFilter(SHSA):
             # print("node: " + node)
             adjacents = list(set(self.model.predecessors(node)) - visited)
             adjacents_sorted = adjacents
-            # local helpers
-            is_variable = self.model.property_value_of(node, 'type') == SHSANodeType.V
-            is_relation = self.model.property_value_of(node, 'type') == SHSANodeType.R
             # update U, T, queue
-            if is_relation: # add only relations to substitution trees
+            # add only relations to substitution trees
+            if self.model.is_relation(node):
                 S.add_node_to(node, wti)
             # sample on variable nodes
-            if is_variable:
+            if self.model.is_variable(node):
                 # draw samples from P(edge(node->n))
                 # calculate weight for utility
-                #w = [p / num_particles for p in particles]
+                # w = [p / num_particles for p in particles]
                 # probability on edges will reflect the accuracy of fit of the
                 # relation given the current value of the variable
-                #TODO
+                # TODO
                 # same probability to get selected for substitution
                 weights = [1] * len(adjacents)
                 # get utilities
                 utilities = [self.model.utility_of(n) for n in adjacents]
                 # weight path w.r.t. probability
                 utilities = [utilities[i] * weights[i] for i in
-                             range(0,len(utilities))]
-                adjacents_sorted = [a for (u,a) in
-                                    sorted(zip(utilities,adjacents),
+                             range(0, len(utilities))]
+                adjacents_sorted = [a for (u, a) in
+                                    sorted(zip(utilities, adjacents),
                                            reverse=True)]
-                # # remove worst relations from the queue and mark them as visited
+                # TODO: remove worst relations from the queue and mark them as
+                # visited
                 # keep = int(round(best*len(adjacents),0))
                 # adjacents_sorted = adjacents_sorted[0:keep]
             # add selected adjacents to queue
             if node not in visited:
                 visited.add(node)
-                if is_variable:
+                if self.model.is_variable(node):
                     # go on ... extend and create new trees if there are
                     # further relations
                     if adjacents_sorted:
@@ -99,9 +99,9 @@ class ParticleFilter(SHSA):
                             queues.append([a])
                         # extend current working tree with best adjacent
                         a = adjacents_sorted[0]
-                        queues[wti].append(a) # append adjacent to queue
-                elif is_relation:
-                    # if all input variables provided it is a valid substitution
+                        queues[wti].append(a)  # append adjacent to queue
+                elif self.model.is_relation(node):
+                    # if all input variables provided it's a valid substitution
                     # stay at this tree because we are almost done
                     # however, we might go on trying to find something better
                     # ... add relations to (new) tree
@@ -142,5 +142,6 @@ class ParticleFilter(SHSA):
             # print()
             # print(S)
             # print("queues" + str(queues))
-        assert visited != set(self.model.nodes()), "unvisited nodes: {}".format(visited)
+        assert visited != set(self.model.nodes()), \
+            "unvisited nodes: {}".format(visited)
         return S

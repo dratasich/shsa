@@ -10,6 +10,7 @@ from model.shsamodel import SHSAModel, SHSANodeType
 from model.substitutionlist import SubstitutionList
 from model.substitution import Substitution
 
+
 class DepthFirstSearch(SHSA):
     """Self-Healing by Structural Adaptation (SHSA) engine."""
 
@@ -29,25 +30,26 @@ class DepthFirstSearch(SHSA):
 
         """
         # init
-        S = SubstitutionList() # empty
+        S = SubstitutionList()  # empty
         # solution at this node
         u_node = self.model.utility_of(node)
         # move on, but do not go back where we came from
-        solutions = [] # list of substitution lists of adjacents
+        solutions = []  # list of substitution lists of adjacents
         adjacents = set(self.model.predecessors(node)) - set([lastnode])
+        # save solution of each adjacent separately
         for n in adjacents:
             s = self.substitute(n, node)
             if len(s) > 0:
-                solutions.append(s) # save solution of each adjacent separately
-        # depending on the type of node the solutions are combined or just added
+                solutions.append(s)
+        # depending on the type of node the solutions are combined or added
         if self.model.is_relation(node):
             # create combinations (take not / take for each adjacent)
-            combs = list(itertools.product([0,1], repeat=len(solutions)))
+            combs = list(itertools.product([0, 1], repeat=len(solutions)))
             for c in combs:
                 # apply combination
                 combsol = list(itertools.compress(solutions, c))
-                if len(combsol) == 0: # taking none is also possible
-                    S.add_substitution() # add empty one
+                if len(combsol) == 0:  # taking none is also possible
+                    S.add_substitution()  # add empty one
                 else:
                     # because these are lists, we have to create the product
                     # again to combine the individual substitution elements
@@ -55,7 +57,8 @@ class DepthFirstSearch(SHSA):
                     for c2 in combs2:
                         # merge substitutions from the combination
                         combsub = itertools.chain.from_iterable(c2)
-                        S.append(Substitution(combsub, model=self.model, root=node))
+                        S.append(Substitution(combsub,
+                                              model=self.model, root=node))
             # add current relation node to all substitutions
             S.add_node_to(node)
         elif self.model.is_variable(node):

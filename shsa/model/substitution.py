@@ -5,9 +5,10 @@ adaptation.
 
 from collections import UserList
 import networkx as nx
-from subprocess import call # call dot to generate .png out of .dot files
+from subprocess import call  # call dot to generate .png out of .dot files
 
 from model.shsamodel import SHSANodeType
+
 
 class Substitution(UserList):
     """Substitution class."""
@@ -47,7 +48,7 @@ class Substitution(UserList):
         return self.__root
 
     def __set_root(self, root):
-        if self.model is not None: # if model already set
+        if self.model is not None:  # if model already set
             if root not in self.model.nodes():
                 raise RuntimeError("""Root node {} is not part of the
                 model.""".format(root))
@@ -83,13 +84,14 @@ class Substitution(UserList):
             raise RuntimeWarning("Substitution is empty.")
         g = nx.DiGraph()
         # find relation to root node
-        rootrelations = list(set(self.model.predecessors(self.root)) & set(self))
+        rootrelations = list(set(self.model.predecessors(self.root))
+                             & set(self))
         if len(rootrelations) == 1:
-            g.add_edge(rootrelations[0], self.__root) # add root node to graph
+            g.add_edge(rootrelations[0], self.__root)  # add root node to graph
         else:
             raise RuntimeError("""Substitution should only contain a single
             relation to the root node.""")
-        visited = set(self.__root) # exclude added variables
+        visited = set(self.__root)  # exclude added variables
         for r1 in self:
             variables = set(self.model.predecessors(r1)) - visited
             for v in variables:

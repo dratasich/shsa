@@ -20,22 +20,24 @@ Example:
 """
 
 from enum import IntEnum
-from subprocess import call # call dot to generate .png out of .dot files
-import yaml # read graph structure and properties from config file
+from subprocess import call  # call dot to generate .png out of .dot files
+import yaml  # read graph structure and properties from config file
 import networkx as nx
 
+
 # model #######################################################################
+
 
 class SHSAModel(nx.DiGraph):
     """Model class.
 
     Currently it is a directed graph, though the knowledge base / the relations
-    between variables are undirected, i.e., each variable can be input or
+    between variables are often undirected, i.e., each variable can be input or
     output. A directed graph may be more suitable for final use, because
     - Relations/functions doesn't have to be converted, for each output
       variable a function is defined given all other connected input variables.
     - There are relations which cannot be converted, i.e., the relation can
-      only be executed into specific direction, i.e., for a specific
+      only be executed into a specific direction, i.e., for a specific
       variable/output (cf. part-of relations).
 
     """
@@ -50,9 +52,9 @@ class SHSAModel(nx.DiGraph):
         dictionary, in particular to distinguish the node types.
 
         """
-        if configfile:
+        if configfile is not None:
             self.__init_from_file(configfile)
-        elif graph_dict and properties:
+        elif (graph_dict is not None) and (properties is not None):
             self.__init_with_graph(graph_dict, properties)
         else:
             raise RuntimeError("""either config file or graph structure &
@@ -71,7 +73,8 @@ class SHSAModel(nx.DiGraph):
             except yaml.YAMLError as e:
                 print(e)
             if 'relations' in data.keys():
-                self.__init_with_relations(data['relations'], data['properties'])
+                self.__init_with_relations(data['relations'],
+                                           data['properties'])
             elif 'graph' in data.keys():
                 self.__init_with_graph(data['graph'], data['properties'])
             else:
@@ -96,7 +99,7 @@ class SHSAModel(nx.DiGraph):
         list of adjacents of the node.
 
         """
-        edges = [(u,v) for u in graph_dict for v in graph_dict[u]]
+        edges = [(u, v) for u in graph_dict for v in graph_dict[u]]
         self.__init_with_edges(edges, properties)
 
     def __init_with_relations(self, relations, properties):
@@ -123,9 +126,9 @@ class SHSAModel(nx.DiGraph):
             for o in relations[r]:
                 inputs.extend(relations[r][o]['in'])
             # create input edges to relation
-            edges.extend([(i,r) for i in set(inputs)])
+            edges.extend([(i, r) for i in set(inputs)])
             # create output edges from relation
-            edges.extend([(r,o) for o in outputs])
+            edges.extend([(r, o) for o in outputs])
         if 'type' not in properties.keys():
             # set the node 'type' according to 'relations'
             properties['type'] = {}
@@ -225,7 +228,7 @@ class SHSAModel(nx.DiGraph):
                 f.write(" \"{0}\" [{1}];\n".format(v, nodestyle))
             for u, v in self.edges():
                 edgestyle = ""
-                if (u,v) in highlight_edges:
+                if (u, v) in highlight_edges:
                     edgestyle = highlight
                 f.write(" \"{0}\" {2} \"{1}\" [{3}];\n".format(u, v, etype,
                                                                edgestyle))
@@ -236,6 +239,7 @@ class SHSAModel(nx.DiGraph):
 
 
 # properties ##################################################################
+
 
 class SHSANodeType(IntEnum):
     """Types of nodes that are distinguished in the model."""
