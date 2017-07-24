@@ -1,4 +1,5 @@
 import unittest
+import itertools
 
 from engine.shsa import SHSA
 from engine.dfs import DepthFirstSearch
@@ -144,6 +145,10 @@ class SHSAEnginesTestCase(SHSATestCase):
                              & self.testcases[no][self.tcindex['result']]),
                         len(S.relations()),
                          """substitution result wrong (TC{})""".format(no))
+        # no double entries
+        for x,y in itertools.combinations(S, 2):
+            self.assertNotEqual(set(x), set(y),
+                                "double entries in result (TC{})".format(no))
 
     def test_dfs(self):
         results = self.substitute_dfs() # execute testcases
