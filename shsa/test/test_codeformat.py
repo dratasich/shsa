@@ -23,6 +23,9 @@ class TestCodeFormat(unittest.TestCase):
         # parse output for file names
         modified_re = re.compile('^\s+[AM]+\s+(.*\.py)', re.MULTILINE)
         staged_files = modified_re.findall(out.decode('utf-8'))
+        # caveat: this only works if the test is called from the base directory
+        # of shsa (e.g., execute unittest with discover)
+        staged_files = ["../" + filename for filename in staged_files]
         return staged_files
 
     def test_pep8_conformance(self):
