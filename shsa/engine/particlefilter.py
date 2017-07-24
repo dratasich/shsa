@@ -43,7 +43,7 @@ class ParticleFilter(SHSA):
         if lookahead > 0:
             assert False, "param 'lookahead': not yet implemented"
         # init
-        S = SubstitutionList(self.model, root)
+        S = SubstitutionList()
         S.add_substitution() # add first (empty) working tree
         wti = 0 # index of the working tree in S
         queues = [[root]] # queues (one queue per substitution tree)

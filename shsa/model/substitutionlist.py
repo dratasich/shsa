@@ -1,24 +1,41 @@
 """Substitution list, i.e., (intermediate) results of self-healing by
 structural adaptation.
 
+Note, be careful to add `Substitution` instances only (not simply lists as the
+members of root and model of `Substitution` are used).
+
 """
 
+from collections import UserList
 import networkx as nx
 
 from model.shsamodel import SHSANodeType
 from model.substitution import Substitution
 
-class SubstitutionList(list):
+class SubstitutionList(UserList):
     """Substitution list class."""
 
-    def __init__(self, model, root, *args, **kwargs):
-        """Initializes a substitution list (all substitutions will have the
-        same underlying model and root node)."""
+    def __init__(self, *args, **kwargs):
+        """Initializes a substitution list.
+
+        Model and root are retrieved from the first substitution if there is
+        any. All substitutions will have the same underlying model and root
+        node.
+
+        """
         super(SubstitutionList, self).__init__(*args, **kwargs)
-        self.__model = model
-        """SHSA model (used to get the utility of a node)."""
-        self.__root = root
-        """The node to substitute."""
+        # nothing todo
+
+    def update(self, root, model=None):
+        """Updates the root and optionally the model of all underlying
+        substitutions.
+
+        """
+        # update substitutions
+        for s in self:
+            s.root = root
+            if model is not None:
+                s.model = model
 
     def best(self):
         """Returns substitution with highest utility."""
@@ -33,7 +50,13 @@ class SubstitutionList(list):
         return self[idx]
 
     def add_substitution(self, nodes=[]):
-        self.append(Substitution(self.__model, self.__root, nodes))
+        if len(self) > 0:
+            model = self[0].model
+            root = self[0].root
+        else:
+            model = None
+            root = None
+        self.append(Substitution(nodes, model=model, root=root))
 
     def add_node_to(self, node, idx=None):
         """Append the node and utility to all substitutions if idx is None,

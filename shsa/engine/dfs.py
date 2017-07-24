@@ -29,7 +29,7 @@ class DepthFirstSearch(SHSA):
 
         """
         # init
-        S = SubstitutionList(self.model, node) # empty
+        S = SubstitutionList() # empty
         # solution at this node
         u_node = self.model.utility_of(node)
         # move on, but do not go back where we came from
@@ -55,7 +55,7 @@ class DepthFirstSearch(SHSA):
                     for c2 in combs2:
                         # merge substitutions from the combination
                         combsub = itertools.chain.from_iterable(c2)
-                        S.append(Substitution(self.model, node, combsub))
+                        S.append(Substitution(combsub, model=self.model, root=node))
             # add current relation node to all substitutions
             S.add_node_to(node)
         elif self.model.is_variable(node):
