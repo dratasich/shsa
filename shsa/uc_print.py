@@ -1,33 +1,6 @@
 #!/usr/bin/python3
 
-from graph.graph import Graph
-from graph.search import bfs, dfs
 from model.shsamodel import SHSAModel, SHSANodeType
-
-## graph prints ###############################################################
-
-g = { "a" : ["d"],
-      "b" : ["c"],
-      "c" : ["b", "c", "d"],
-      "d" : ["a", "c"],
-      "e" : []
-}
-
-graph = Graph(g)
-print(graph)
-print()
-graph.write_dot("uc_print_graph-dot")
-graph.write_dot("uc_print_graph-pdf", oformat="pdf")
-
-print("BFS")
-print(bfs(graph, "a"))
-print()
-
-print("DFS")
-print(dfs(graph, "a"))
-print()
-
-## SHSA model prints ##########################################################
 
 g = {
     'speed': ['tf1.1'],
