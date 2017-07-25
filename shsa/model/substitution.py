@@ -72,46 +72,82 @@ class Substitution(UserList):
         """Returns set of relations involved in the substitution."""
         return frozenset(self)
 
-    def tree(self):
+    def requirements_ok(self):
+        """Returns false if the substitution does not fulfil the requirements.
+
+        Uses `self.tree()` to get the substitution tree and input
+        variables. Note, that the properties are not saved in the graph
+        returned by `self.tree()`, so the original model has to be used to
+        retrieve properties of nodes.
+
+        Possible improvement:
+        - Maintain the requirements_ok flag by checking the requirements of the
+          last added node.
+
+          LEMMA (to be proven): subtrees and combinations of subtrees from the
+          adjacents are ok, hence only the added relation node has to be
+          checked.
+
+        """
+        # get tree and input variables
+        _, vin = self.tree()
+        # check provision of source nodes
+        return self.model.provided(vin)
+
+    def tree(self, collapse_variables=True):
         """Returns a graph based on the substitution nodes.
 
-        Returns self.model intersect self (nodes) + self.model
-        structure. Additionally saves the properties from the SHSA model.
-        Note, assumes only relations are part of the nodes in this list.
+        Returns self.model intersect self (nodes) + self.model structure (by
+        BFS). Additionally saves the properties from the SHSA model. Note,
+        assumes only relations are part of the nodes in this list.
+
+        Possible improvement:
+        - Maintain the tree with adding nodes.
 
         """
         if len(self) == 0:
             raise RuntimeWarning("Substitution is empty.")
         g = nx.DiGraph()
-        # find relation to root node
-        rootrelations = list(set(self.model.predecessors(self.root))
-                             & set(self))
-        if len(rootrelations) == 1:
-            g.add_edge(rootrelations[0], self.__root)  # add root node to graph
-        else:
-            raise RuntimeError("""Substitution should only contain a single
-            relation to the root node.""")
-        visited = set(self.__root)  # exclude added variables
-        for r1 in self:
-            variables = set(self.model.predecessors(r1)) - visited
-            for v in variables:
-                visited.add(v)
-                # check connected relation:
-                # - should be part of the tree
-                # - exclude relation where we are coming from (r!=r1)
-                relations = list(filter(lambda r: r in self and r != r1,
-                                        self.model.predecessors(v)))
-                if len(relations) == 1:
-                    # following transfer function (passing v)
-                    g.add_edge(relations[0], r1)
-                elif len(relations) == 0:
-                    # leaf/source node
-                    g.add_edge(v, r1)
-                else:
-                    # more than one transfer functions for a variable in the
-                    # substitution is not allowed
-                    raise RuntimeError("Substitution faulty.")
-        return g
+        inputs = []
+        # bfs through relations
+        visited = set()
+        queue = [self.root]  # first-in, first-out queue
+        # as long as there is an unvisited vertex
+        while queue:
+            node = queue.pop(0)
+            if node not in visited:
+                # mark node as processed
+                visited.add(node)
+                # get predecessors excluding the node where we come from
+                adjacents = set(self.model.predecessors(node)) - visited
+                # if its a variable node we proceed only with the relation in
+                # the substitution list and add edges
+                if self.model.is_variable(node):
+                    # filter relations that are part of the substitution
+                    adjacents = adjacents & set(self)
+                    # save the input variables additionally
+                    if len(adjacents) == 0:
+                        inputs.append(node)
+                queue.extend(adjacents - visited)
+                for a in adjacents:
+                    g.add_edge(a, node)
+        # remove intermediate variables
+        if collapse_variables:
+            for n in g.nodes():
+                # skip relation nodes
+                if self.model.is_relation(n):
+                    continue
+                # get all variable nodes with 2 edges
+                e1 = g.predecessors(n)
+                e2 = g.successors(n)
+                if len(e1) != 1 or len(e2) != 1:
+                    continue
+                e1 = g.predecessors(n)[0]
+                e2 = g.successors(n)[0]
+                g.add_edge(e1, e2)
+                # remove variable node including adjacent edges
+                g.remove_node(n)
+        return g, inputs
 
     def write_dot(self, basefilename, oformat=None):
         """Saves the model as dot-file and generates an image if oformat given.
@@ -121,7 +157,7 @@ class Substitution(UserList):
                    generated dot-file is converted to the given format.
         """
         # create structure
-        tree = self.tree()
+        tree, vin = self.tree(collapse_variables=True)
         # dot settings
         gtype = "graph"
         etype = "--"
@@ -130,7 +166,7 @@ class Substitution(UserList):
             f.write("  node [fontname=\"sans-serif\"];\n")
             for n in tree.nodes():
                 nodestyle = ""
-                if self.model.node[n]['type'] == SHSANodeType.R:
+                if self.model.is_relation(n):
                     nodestyle += "shape=box"
                 f.write(" \"{0}\" [{1}];\n".format(n, nodestyle))
             for u, v in tree.edges():

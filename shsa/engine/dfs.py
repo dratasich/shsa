@@ -61,6 +61,12 @@ class DepthFirstSearch(SHSA):
                                               model=self.model, root=node))
             # add current relation node to all substitutions
             S.add_node_to(node)
+            # root node (= last variable node) will/must be updated before
+            # checking requirements
+            S.update(lastnode, self.model)
+            # filter the substitutions that fulfil the requirements
+            new = list(filter(lambda s: s.requirements_ok(), S))
+            S = SubstitutionList(new)
         elif self.model.is_variable(node):
             # simply add returned solutions
             for s in solutions:
