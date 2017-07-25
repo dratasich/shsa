@@ -2,11 +2,11 @@
 """Test SHSA substitution."""
 
 import argparse
-import networkx as nx
 
 from engine.dfs import DepthFirstSearch
 from engine.greedy import Greedy
 from engine.particlefilter import ParticleFilter
+from model.shsamodel import SHSAModel
 from model.substitution import Substitution
 
 # parse optional config file
@@ -19,6 +19,10 @@ parser.add_argument('-c', '--config', type=str,
                     help="SHSA model in a config file.")
 args = parser.parse_args()
 
+model = SHSAModel(configfile=args.config)
+assert args.root in model.nodes(), \
+    "root '{}' is not part of the model".format(args.root)
+assert model.is_variable(args.root), "relation nodes cannot be substituted"
 
 print("DFS")
 engine = DepthFirstSearch(configfile=args.config)
@@ -34,7 +38,9 @@ print("- best: {}".format(S.best()))
 
 # substitution tree with highest utility
 engine.model.write_dot("uc_shsa_model", 'pdf')
-S.best().write_dot("uc_shsa_substitution", 'pdf')
+sbest = S.best()
+if sbest is not None:
+    sbest.write_dot("uc_shsa_substitution", 'pdf')
 
 # print("Greedy")
 # engine = Greedy(configfile="../config/shsamodel1.yaml")
