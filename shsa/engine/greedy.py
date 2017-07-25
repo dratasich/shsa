@@ -6,6 +6,7 @@ find a substitute.
 from engine.shsa import SHSA
 from model.shsamodel import SHSAModel, SHSANodeType
 
+
 class Greedy(SHSA):
     """Self-Healing by Structural Adaptation (SHSA) engine."""
 

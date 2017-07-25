@@ -54,7 +54,7 @@ class SubstitutionTestCase(unittest.TestCase):
         self.assertTrue('root' in t.nodes(),
                         "root node is not part of the substitution tree")
         self.assertEqual(set(vin), {'r1', 'r6', 'r7'},
-                        "wrong variable source nodes")
+                         "wrong variable source nodes")
         # model with more directions on edges
         s = Substitution(['r4', 'r3'],
                          model=SHSAModel(configfile="test/model_p1.yaml"),

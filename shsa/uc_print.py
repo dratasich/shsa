@@ -1,27 +1,19 @@
 #!/usr/bin/python3
+"""Prints a SHSA model."""
+
+import argparse
 
 from model.shsamodel import SHSAModel, SHSANodeType
 
-g = {
-    'speed': ['tf1.1'],
-    'tf1.1': ['acc'],
-    'acc': ['tf1.2'],
-    'tf1.2': ['speed'],
-}
-p = {
-    'type': { 'speed': SHSANodeType.V, 'acc': SHSANodeType.V,
-              'tf1.1': SHSANodeType.R, 'tf1.2': SHSANodeType.R },
-    'need': { 'speed': True, 'acc': False },
-    'provided': { 'speed': True, 'acc': True },
-    'function': { 'tf1.1': "a = dv/dt", 'tf1.2': "v = int(a)" },
-}
-model = SHSAModel(g, p)
-print(model)
-model.write_dot("uc_print_highlight-edges1",
-                highlight_edges=[('speed','tf1.1')])
-model.write_dot("uc_print_highlight-edges2", "pdf", [('speed','tf1.1')])
+# parse optional config file
+parser = argparse.ArgumentParser(description="""Execute SHSA engines given a
+config file.""")
+parser.add_argument('-m', '--model', type=str,
+                    default="../config/shsamodel1.yaml",
+                    help="SHSA model in a config file.")
+args = parser.parse_args()
 
 # yaml example
-model = SHSAModel(configfile="../config/shsamodel1.yaml")
-model.write_dot("uc_print_config-shsamodel1-yaml", "pdf")
+model = SHSAModel(configfile=args.model)
+model.write_dot("uc_print_model", "pdf")
 print(model)
