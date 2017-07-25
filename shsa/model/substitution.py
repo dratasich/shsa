@@ -21,18 +21,18 @@ class Substitution(UserList):
         https://docs.python.org/3.2/library/collections.html#collections.UserList
 
         """
+        # defaults
+        self.model = None
+        """SHSA model (used to get the utility of a node)."""
+        self.root = None
+        """SHSA root, the node to substitute."""
         # extract substitution related arguments
         if 'model' in kwargs.keys():
             self.model = kwargs['model']
-            """SHSA model (used to get the utility of a node)."""
             del kwargs['model']
-        else:
-            self.model = None
         if 'root' in kwargs.keys():
             self.root = kwargs['root']
             del kwargs['root']
-        else:
-            self.model = None
         # initialize list
         super(Substitution, self).__init__(*args, **kwargs)
 
