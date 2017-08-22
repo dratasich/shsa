@@ -57,14 +57,14 @@ class Substitution(UserList):
     root = property(__get_root, __set_root)
 
     def __get_utility(self):
-        """Returns the sum of node-utilities.
-
-        Could be improved by saving the overall utility when adding nodes,
-        i.e., utility could be maintained. However, each list extension has to
-        be overloaded.
-
-        """
-        return sum([self.model.utility_of(n) for n in self])
+        """Returns the product of node-utilities."""
+        u = 1.0
+        # product of utilities in list
+        for n in self:
+            ui = self.model.utility_of(n)
+            assert ui >= 0 and ui <= 1, "Utility must be normalized!"
+            u *= self.model.utility_of(n)
+        return u
 
     utility = property(__get_utility)
 

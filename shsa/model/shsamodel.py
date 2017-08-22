@@ -164,12 +164,26 @@ class SHSAModel(nx.DiGraph):
         """Sets the value of a property of a node."""
         self.node[node][prop] = value
 
-    def utility_of(self, node):
-        """Returns the utility of a relation node."""
-        if self.property_value_of(node, 'type') == SHSANodeType.V:
+    def utility_of(self, r, v=None):
+        """Returns the utility of a relation node r that should substitute the
+        given variable v.
+
+        """
+        if not (self.is_relation(r) and (v is None or self.is_variable(v))):
             return 0
-        # TODO: utility function (e.g., weighted sum of properties)
-        return len(self.neighbors(node))
+        # relation should have at least one predecessor (i.e., be connected)
+        assert len(set(self.predecessors(r)) - set([v])) >= 1, """relation
+        node {} must be connected to variable(s)""".format(r)
+        # utility function by weighted sum
+        # weights must sum up to 1 (to keep u normalized [0,1])
+        w = [
+            1.0,
+        ]
+        u = [
+            # only one node, perfect; the more nodes, the worse
+            1.0 / len(set(self.predecessors(r)) - set([v])),
+        ]
+        return sum([wi*ui for wi, ui in zip(w, u)])
 
     #
     # getters for SHSA properties
