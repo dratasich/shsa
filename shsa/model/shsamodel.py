@@ -185,6 +185,7 @@ class SHSAModel(nx.DiGraph):
 
     def provided(self, nodes):
         """Returns true, if all nodes are provided."""
+        assert type(nodes) is list, "given nodes must be of type list"
         for n in nodes:
             if self.property_value_of(n, 'type') == SHSANodeType.R:
                 raise RuntimeError("Relations have no property 'provided'.")

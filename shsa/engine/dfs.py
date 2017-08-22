@@ -31,10 +31,8 @@ class DepthFirstSearch(SHSA):
         """
         # init
         S = SubstitutionList()  # empty
-        # solution at this node
-        u_node = self.model.utility_of(node)
-        # move on, but do not go back where we came from
         solutions = []  # list of substitution lists of adjacents
+        # move on, but do not go back where we came from
         adjacents = set(self.model.predecessors(node)) - set([lastnode])
         # save solution of each adjacent separately
         for n in adjacents:
