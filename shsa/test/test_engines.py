@@ -67,6 +67,18 @@ class SHSATestCase(unittest.TestCase):
             results.append(S)
         return results
 
+    def substitute_greedy(self):
+        """Returns testcase results of greedy search."""
+        if not self.testcases:  # no testcases
+            return
+        results = []
+        for i in range(len(self.testcases)):
+            engine = Greedy(
+                configfile=self.testcases[i][self.tcindex['file']])
+            S = engine.substitute(self.testcases[i][self.tcindex['root']])
+            results.append(S)
+        return results
+
     def substitute_pf(self):
         """Returns testcase results of particle filter."""
         if not self.__tc:  # no testcases
