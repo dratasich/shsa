@@ -57,13 +57,24 @@ class Substitution(UserList):
     root = property(__get_root, __set_root)
 
     def __get_utility(self):
-        """Returns the product of node-utilities."""
+        """Returns the product of node-utilities.
+
+        Utility of a node depends on the tree structure (execution direction of
+        relations from root node) and the input variables (e.g., sample rate).
+
+        """
+        # get substitution tree with intermediate variables (for utility
+        # calculation we need the predecessor variables for relations)
+        t, vin = self.tree(collapse_variables=False)
+        t = t.to_undirected()  # ignore direction
+        # get all predecessors (by bfs)
+        pre = nx.bfs_predecessors(t, self.root)
+        # product of utilities (of all relations given their predecessors)
         u = 1.0
-        # product of utilities in list
-        for n in self:
-            ui = self.model.utility_of(n)
+        for r in self:
+            ui = self.model.utility_of(r, pre[r])
             assert ui >= 0 and ui <= 1, "Utility must be normalized!"
-            u *= self.model.utility_of(n)
+            u *= ui
         return u
 
     utility = property(__get_utility)
