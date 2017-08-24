@@ -46,8 +46,8 @@ class Greedy(SHSA):
         u = 0.0
         rbest = None
         for r in relations:
-            if self.model.utility_of(r, node) > u:
-                u = self.model.utility_of(r, node)
+            if S[0].utility_fct.utility_of_relation(self.model, r, node) > u:
+                u = S[0].utility_fct.utility_of_relation(self.model, r, node)
                 rbest = r
         # add best relation
         S[0].append(rbest)

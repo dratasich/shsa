@@ -143,54 +143,39 @@ class SHSAModel(nx.DiGraph):
                 properties['type'][r] = 1
         self.__init_with_edges(edges, properties)
 
+    def has_property(self, node, prop):
+        """Returns true if the node has an attribute 'prop'."""
+        try:
+            value = self.node[node][prop]
+        except KeyError:
+            if prop == 'type':
+                raise RuntimeError("""Property 'type' should always be
+                available.""")
+            return False
+        return True
+
     def property_value_of(self, node, prop):
         """Returns the value of a property of a node."""
         defaults = {
             'provided': False,
             'need': False,
             'description': "",
+            'cost': 0,
         }
         try:
             value = self.node[node][prop]
         except KeyError:
             if prop == 'type':
-                assert False, "the property 'type' should always be available"
-            raise RuntimeWarning("""Property '{}' of node '{}' is missing,
-            using default!""".format(prop, type))
+                raise RuntimeError("""Property 'type' should always be
+                available.""")
             value = defaults[prop]
+            raise RuntimeWarning("""Property '{}' of node '{}' is missing,
+            using default: {}!""".format(prop, node, value))
         return value
 
     def set_property_to(self, node, prop, value):
         """Sets the value of a property of a node."""
         self.node[node][prop] = value
-
-    def utility_of(self, r, v):
-        """Returns the utility of a relation node r that should substitute the
-        given variable v.
-
-        Utility depends on the variable to substitute (v). Relations may be
-        executed in a specific direction, i.e, the input nodes change,
-        consequently, also the properties change, which influence the utility
-        (e.g., sample rate).
-
-        """
-        if not (self.is_relation(r) and (v is None or self.is_variable(v))):
-            return 0
-        # input variables for relation
-        rin = set(self.predecessors(r)) - set([v])
-        # relation should have at least one predecessor (i.e., be connected)
-        assert len(rin) >= 1, """relation node {} must be connected to
-        variable(s)""".format(r)
-        # utility function by weighted sum
-        # weights must sum up to 1 (to keep u normalized [0,1])
-        w = [
-            1.0,
-        ]
-        u = [
-            # only one node, perfect; the more nodes, the worse
-            1.0 / len(rin),
-        ]
-        return sum([wi*ui for wi, ui in zip(w, u)])
 
     #
     # getters for SHSA properties
@@ -213,6 +198,11 @@ class SHSAModel(nx.DiGraph):
             if not self.property_value_of(n, 'provided'):
                 return False
         return True
+
+    def unprovided(self, nodes):
+        """Returns unprovided nodes."""
+        return [n for n in nodes
+                if self.property_value_of(n, 'provided') is False]
 
     def __str__(self):
         res = "Nodes\n"

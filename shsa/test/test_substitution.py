@@ -3,6 +3,7 @@ import unittest
 from model.shsamodel import SHSAModel
 from model.substitution import Substitution
 from model.substitutionlist import SubstitutionList
+from model.utility import *
 
 
 class SubstitutionTestCase(unittest.TestCase):
@@ -146,6 +147,11 @@ class SubstitutionListTestCase(unittest.TestCase):
                          "new substitution has other/no root")
         self.assertEqual(S[3].model, self.__model,
                          "new substitution has other/no model")
+        # update utility function too
+        uf_new = UtilityNorm()
+        S.update(self.__root, utility_fct=uf_new)
+        self.assertEqual(S[2].utility_fct, uf_new,
+                         "new substitution has other/no utility_fct")
 
     def test_best(self):
         """Tests for correct utility and if best substitution is returned."""

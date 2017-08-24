@@ -8,6 +8,7 @@ import networkx as nx
 from subprocess import call  # call dot to generate .png out of .dot files
 
 from model.shsamodel import SHSANodeType
+from model.utility import *
 
 
 class Substitution(UserList):
@@ -26,6 +27,8 @@ class Substitution(UserList):
         """SHSA model (used to get the utility of a node)."""
         self.root = None
         """SHSA root, the node to substitute."""
+        self.utility_fct = UtilityNorm()
+        """Utility function to use."""
         # extract substitution related arguments
         if 'model' in kwargs.keys():
             self.model = kwargs['model']
@@ -33,6 +36,9 @@ class Substitution(UserList):
         if 'root' in kwargs.keys():
             self.root = kwargs['root']
             del kwargs['root']
+        if 'utility_fct' in kwargs.keys():
+            self.utility_fct = kwargs['utility_fct']
+            del kwargs['utility_fct']
         # initialize list
         super(Substitution, self).__init__(*args, **kwargs)
 
@@ -56,26 +62,16 @@ class Substitution(UserList):
 
     root = property(__get_root, __set_root)
 
+    def __get_utility_fct(self):
+        return self.__utility_fct
+
+    def __set_utility_fct(self, utility_fct):
+        self.__utility_fct = utility_fct
+
+    utility_fct = property(__get_utility_fct, __set_utility_fct)
+
     def __get_utility(self):
-        """Returns the product of node-utilities.
-
-        Utility of a node depends on the tree structure (execution direction of
-        relations from root node) and the input variables (e.g., sample rate).
-
-        """
-        # get substitution tree with intermediate variables (for utility
-        # calculation we need the predecessor variables for relations)
-        t, vin = self.tree(collapse_variables=False)
-        t = t.to_undirected()  # ignore direction
-        # get all predecessors (by bfs)
-        pre = nx.bfs_predecessors(t, self.root)
-        # product of utilities (of all relations given their predecessors)
-        u = 1.0
-        for r in self:
-            ui = self.model.utility_of(r, pre[r])
-            assert ui >= 0 and ui <= 1, "Utility must be normalized!"
-            u *= ui
-        return u
+        return self.__utility_fct.utility_of_substitution(self)
 
     utility = property(__get_utility)
 

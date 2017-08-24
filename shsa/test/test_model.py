@@ -60,6 +60,13 @@ class SHSAModelTestCase(unittest.TestCase):
         self.assertFalse(m.property_value_of('a', 'need'),
                          "wrong initialized property")
 
+    def test_has_property(self):
+        m = SHSAModel(self.__graph_dict, self.__properties)
+        self.assertTrue(m.has_property('a', 'need'),
+                        "property missing")
+        self.assertFalse(m.has_property('a', 'dummy'),
+                         "property available although not in config")
+
 
 if __name__ == '__main__':
         unittest.main()

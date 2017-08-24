@@ -19,15 +19,15 @@ class SubstitutionList(UserList):
     def __init__(self, *args, **kwargs):
         """Initializes a substitution list.
 
-        Model and root are retrieved from the first substitution if there is
-        any. All substitutions will have the same underlying model and root
-        node.
+        Model, root and utility function are retrieved from the first
+        substitution if there is any. All substitutions will have the same
+        underlying model, root node and utility function.
 
         """
         super(SubstitutionList, self).__init__(*args, **kwargs)
         # nothing todo
 
-    def update(self, root, model=None):
+    def update(self, root, model=None, utility_fct=None):
         """Updates the root and optionally the model of all underlying
         substitutions.
 
@@ -37,6 +37,8 @@ class SubstitutionList(UserList):
             s.root = root
             if model is not None:
                 s.model = model
+            if utility_fct is not None:
+                s.utility_fct = utility_fct
 
     def best(self):
         """Returns substitution with highest utility."""
