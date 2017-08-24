@@ -3,11 +3,12 @@
 
 import argparse
 
-from engine.dfs import DepthFirstSearch
-from engine.greedy import Greedy
-from engine.particlefilter import ParticleFilter
 from model.shsamodel import SHSAModel
 from model.substitution import Substitution
+
+from engine.dfs import DepthFirstSearch
+from engine.greedy import Greedy
+
 
 # parse optional config file
 parser = argparse.ArgumentParser(description="""Execute SHSA engines given a
@@ -21,8 +22,6 @@ parser.add_argument('-d', '--dfs', action="store_true",
                     help="Depth-first-search.")
 parser.add_argument('-g', '--greedy', action="store_true",
                     help="Greedy search.")
-parser.add_argument('-p', '--pf', action="store_true",
-                    help="Search by particle filtering.")
 args = parser.parse_args()
 
 # additional input validation
@@ -51,13 +50,6 @@ if args.dfs:
 if args.greedy:
     print("Greedy")
     engine = Greedy(configfile=args.config)
-    S = engine.substitute(args.root)
-    print("- results:\n{}".format(S))
-    print("- best: {}".format(S.best()))
-
-if args.pf:
-    print("PF")
-    engine = ParticleFilter(configfile=args.config)
     S = engine.substitute(args.root)
     print("- results:\n{}".format(S))
     print("- best: {}".format(S.best()))

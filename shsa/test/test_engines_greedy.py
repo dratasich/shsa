@@ -1,9 +1,8 @@
 import unittest
 import itertools
 
-from engine.shsa import SHSA
-from engine.greedy import Greedy
 from test.test_engines import SHSATestCase
+from engine.greedy import Greedy
 
 
 class SHSAGreedyTestCase(SHSATestCase):
