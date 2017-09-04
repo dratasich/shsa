@@ -184,4 +184,7 @@ class Substitution(UserList):
                   basefilename + "." + oformat, basefilename + ".dot"])
 
     def __str__(self):
-        return "U = " + str(self.utility) + " | " + str(list(self))
+        u = self.utility_fct.best()
+        if len(self) > 0:
+            u = self.utility
+        return "U = " + str(u) + " | " + str(list(self))

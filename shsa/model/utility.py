@@ -15,6 +15,12 @@ class Utility(object):
     def utility_of_substitution(self, s):
         pass
 
+    def best(self):
+        pass
+
+    def add(self, u1, u2):
+        pass
+
 
 class UtilityNorm(Utility):
     """Normalized utility."""
@@ -78,5 +84,18 @@ class UtilityNorm(Utility):
         for r in s:
             ui = self.utility_of_relation(s.model, r, pre[r])
             assert ui >= 0 and ui <= 1, "Utility must be normalized!"
-            u *= ui
+            u = self.add(u, ui)
         return u
+
+    def best(self):
+        """Returns best utility, i.e., initial of an empty substitution."""
+        return 1.0
+
+    def add(self, u1, u2):
+        """Adds up utilities, and returns the result.
+
+        Defines how the utilities are added up in a substitution (e.g., sum
+        vs. product).
+
+        """
+        return u1 * u2
