@@ -1,0 +1,35 @@
+relations:
+  r1:
+    a:
+      in: [b, c, d]
+      fct: ""
+  r2:
+    c:
+      in: [e]
+      fct: ""
+  r3:
+    a:
+      in: [f]
+      fct: ""
+  r4:
+    f:
+      in: [g, h, i, j]
+      fct: ""
+
+
+properties:
+
+  # type will be generated, however 'properties' and at least 1 key have to be
+  # available
+
+  provided:
+    a: False
+    b: True
+    c: False
+    d: True
+    e: True
+    f: False
+    g: True
+    h: True
+    i: True
+    j: True
