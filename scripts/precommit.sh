@@ -8,8 +8,8 @@ python3 -m unittest discover 2> test.log
 # get first line, containing results, removing passed testcases
 res=$(head -n 1 test.log | tr -d '.')
 # count occurences of 'E' and 'F'
-nume=$(echo "$res" | tr -c -d 'F' | wc -c)
-numf=$(echo "$res" | tr -c -d 'E' | wc -c)
+nume=$(echo "$res" | tr -c -d 'E' | wc -c)
+numf=$(echo "$res" | tr -c -d 'F' | wc -c)
 rm -f test.log
 
 echo "ERROR: $nume"
