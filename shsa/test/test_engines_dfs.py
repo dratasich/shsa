@@ -25,6 +25,7 @@ class SHSADFSTestCase(SHSATestCase):
              ])),
             ("test/model2.yaml", 'a',
              frozenset([
+                 frozenset([]),
                  frozenset(['r1']),
                  frozenset(['r1', 'r2']),
                  frozenset(['r1', 'r2', 'r5']),
@@ -37,11 +38,13 @@ class SHSADFSTestCase(SHSATestCase):
              ])),
             ("test/model2.yaml", 'b',
              frozenset([
+                 frozenset([]),
                  frozenset(['r2']),
                  frozenset(['r2', 'r5']),
              ])),
             ("test/model2.yaml", 'c',
              frozenset([
+                 frozenset([]),
                  frozenset(['r1']),
                  frozenset(['r1', 'r2']),
                  frozenset(['r1', 'r2', 'r5']),
@@ -50,6 +53,7 @@ class SHSADFSTestCase(SHSATestCase):
              ])),
             ("test/model2.yaml", 'f',
              frozenset([
+                 frozenset([]),
                  frozenset(['r4']),
              ])),
             ("test/model3.yaml", 'a', frozenset([frozenset(['r1'])])),

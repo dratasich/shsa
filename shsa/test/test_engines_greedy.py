@@ -18,7 +18,7 @@ class SHSAGreedyTestCase(SHSATestCase):
             ("test/model1.yaml", 'root', frozenset(['t2'])),
             ("test/model2.yaml", 'a', frozenset([])),
             ("test/model3.yaml", 'a', frozenset(['r1'])),
-            ("test/model3.yaml", 'd', frozenset([])),
+            ("test/model3.yaml", 'd', frozenset(['r2'])),
             ("test/model_p1.yaml", 'a', frozenset(['r1', 'r2'])),
         ]
 

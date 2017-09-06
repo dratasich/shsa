@@ -44,6 +44,10 @@ if args.dfs:
     print("DFS")
     engine = DepthFirstSearch(configfile=args.config)
     S = engine.substitute(args.root)
+    # when the root is already provided, an empty substitution is also valid
+    if engine.model.provided([args.root]):
+        s = Substitution(root=args.root, model=engine.model)
+        S.append(s)
     print("- results:\n{}".format(S))
     print("- best: {}".format(S.best()))
 

@@ -4,6 +4,7 @@ import itertools
 from engine.shsa import SHSA
 from engine.dfs import DepthFirstSearch
 from engine.greedy import Greedy
+from model.substitutionlist import SubstitutionList
 
 
 class SHSAInitTestCase(unittest.TestCase):
@@ -71,6 +72,15 @@ class SHSATestCase(unittest.TestCase):
             engine = DepthFirstSearch(
                 configfile=self.testcases[i][self.tcindex['file']])
             S = engine.substitute(self.testcases[i][self.tcindex['root']])
+            # workaround for dfs start --
+            # dfs cannot handle substitutions where the root node is already
+            # provided (recursive implementation would cause double entries),
+            # so we add the solution (empty substitution) manually
+            root = self.testcases[i][self.tcindex['root']]
+            if engine.model.is_variable(root) \
+               and engine.model.provided([root]):
+                S.add_substitution()  # add empty substitution
+            # workaround for dfs done --
             results.append(S)
         return results
 

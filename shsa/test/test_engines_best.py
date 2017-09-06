@@ -18,7 +18,7 @@ class SHSABestTestCase(SHSATestCase):
             ("test/model1.yaml", 'root', {'t2'}),
             ("test/model2.yaml", 'a', set()),
             ("test/model3.yaml", 'a', {'r1'}),
-            ("test/model3.yaml", 'd', set()),
+            ("test/model3.yaml", 'd', {'r2'}),
             ("test/model4.yaml", 'a', {'r1', 'r2'}),
             ("test/model_p1.yaml", 'a', {'r1', 'r2'}),
             ("test/model_p1.yaml", 'c', set()),

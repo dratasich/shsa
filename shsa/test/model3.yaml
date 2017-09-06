@@ -42,13 +42,13 @@ properties:
     a: False
     b: True
     c: True
-    d: True
+    d: False
     e: True
     f: True
-    g: True
+    g: False
     h: True
     i: True
-    j: True
+    j: False
     k: True
-    l: True
+    l: False
     m: True
