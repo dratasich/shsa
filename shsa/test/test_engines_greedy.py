@@ -24,13 +24,9 @@ class SHSAGreedyTestCase(SHSATestCase):
 
     def __check_results(self, S, no):
         """Verifies results against output data."""
-        self.assertEqual(len(S), 1,
-                         """greedy must return exactly one result
-                         (TC{})""".format(no))
         # check if the solution is the best one
-        self.assertEqual(S[0].relations()
-                         & self.testcases[no][self.tcindex['result']],
-                         S[0].relations(),
+        self.assertEqual(S.best().relations(),
+                         self.testcases[no][self.tcindex['result']],
                          """substitution result wrong (TC{})""".format(no))
 
     def test_greedy(self):

@@ -21,13 +21,14 @@ class SHSABestTestCase(SHSATestCase):
             ("test/model3.yaml", 'd', set()),
             ("test/model4.yaml", 'a', {'r1', 'r2'}),
             ("test/model_p1.yaml", 'a', {'r1', 'r2'}),
+            ("test/model_p1.yaml", 'c', set()),
             ("test/model_p2.yaml", 'a', {'r2'}),
             ("test/model_p3.yaml", 'a', {'r1'}),
         ]
 
     def __check_results(self, S, no):
         """Verify if the returned result is the best substitution."""
-        self.assertEqual(S[0].relations(),
+        self.assertEqual(S.best().relations(),
                          self.testcases[no][self.tcindex['best']],
                          """best substitution wrong (TC{})""".format(no))
 

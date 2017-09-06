@@ -96,6 +96,9 @@ class Substitution(UserList):
           checked.
 
         """
+        # substitution empty, thats also fine
+        if len(self) == 0:
+            return True
         # get tree and input variables
         _, vin = self.tree()
         # check provision of source nodes

@@ -4,9 +4,9 @@ find a substitute.
 """
 
 from engine.shsa import SHSA
-from model.shsamodel import SHSAModel, SHSANodeType
-from model.substitutionlist import SubstitutionList
+from engine.worker import Worker
 from model.substitution import Substitution
+from model.substitutionlist import SubstitutionList
 
 
 class Greedy(SHSA):
@@ -19,10 +19,12 @@ class Greedy(SHSA):
     def substitute(self, node, lastnode=None):
         """Search a substitute for the given node with greedy algorithm.
 
-        Recursive implementation.
+        Maintains a sorted list of workers, each proceeding to search along a
+        substitution path. Continue search at worker with the highest utility.
 
-        No anytime algorithm. Gives one - the best - solution with given
-        utility function (multiplied utilities [0,1]).
+        Non-recursive implementation.
+
+        Can be implemented as anytime algorithm.
 
         Assumptions:
         - The given node must be of type `SHSANodeType.V`, i.e., a variable of
@@ -33,30 +35,25 @@ class Greedy(SHSA):
         """
         assert self.model.is_variable(node), "Substitute variables only!"
         # init result
-        S = SubstitutionList()  # empty list
-        S.add_substitution()  # add empty substitution
-        S.update(root=node, model=self.model)
-        # variable is provided, we can stop here (assumption: utility can get
-        # only worse by adding relations)
-        if self.model.provided([node]):
-            return S
-        # move on to relations, but do not go back where we came from
-        relations = set(self.model.predecessors(node)) - set([lastnode])
-        # get best relation choice
-        u = 0.0
-        rbest = None
-        for r in relations:
-            if S[0].utility_fct.utility_of_relation(self.model, r, node) > u:
-                u = S[0].utility_fct.utility_of_relation(self.model, r, node)
-                rbest = r
-        # add best relation
-        S[0].append(rbest)
-        # substitute upcoming variables if necessary
-        variables = set(self.model.predecessors(rbest)) - set([node])
-        for v in variables:
-            s = self.substitute(v, lastnode=rbest)
-            # extend with relation nodes (returned in a list of substitutions)
-            S[0].extend(s[0])
-        # update root, because sub-solutions have different root nodes
-        S.update(root=node)
+        S = SubstitutionList()  # list of substitutions (results)
+        W = []  # list of workers
+        # create first worker (empty substitution, start at root node)
+        W.append(Worker(Substitution(root=node, model=self.model),
+                        variables=[node]))
+        # work on with best worker (keep W sorted w.r.t. utility)
+        while len(W) > 0:
+            while W[0].has_next():
+                wnew = W[0].next()
+                # insertion sort
+                for w in wnew:
+                    for i in range(len(W)):
+                        if w.utility < W[i].utility:
+                            W.insert(i, w)
+            # current best worker done, but we move on to find better
+            # solutions (we could here return an intermediate result)
+            # remove finished worker from list
+            w = W.pop(0)
+            # add worker's substitution to results
+            S.append(w.substitution)
+        # all solutions found
         return S

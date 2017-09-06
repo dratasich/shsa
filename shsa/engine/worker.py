@@ -42,7 +42,7 @@ class Worker(object):
             if not (substitution.model.is_variable(v)
                     and substitution.model.is_relation(r)):
                 raise RuntimeError("({},{}) wrong node type.".format(v, r))
-        self.__vars = variables
+        self.__vars = self.__model.unprovided(variables)
         """Queue of variables, i.e., variables to proceed."""
         self.__rels = relations
         """Queue of relations, i.e., relations to proceed."""
@@ -71,6 +71,11 @@ class Worker(object):
 
     utility = property(__get_utility, __set_utility)
     """Utility of the worker."""
+
+    def __get_substitution(self):
+        return self.__sub
+
+    substitution = property(__get_substitution)
 
     def __add(self, r, u):
         # update underlying substitution first, such that utility will fit (and

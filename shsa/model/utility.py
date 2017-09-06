@@ -47,7 +47,7 @@ class UtilityNorm(Utility):
         w = [
             1,
             0.5,
-            0.5,
+            0.1,
         ]
         u = [1.0] * len(w)
         # only one node, perfect; the more nodes, the worse
@@ -73,6 +73,9 @@ class UtilityNorm(Utility):
         relations from root node) and the input variables (e.g., sample rate).
 
         """
+        # empty substitution is also fine
+        if len(s) == 0:
+            return self.best()
         # get substitution tree with intermediate variables (for utility
         # calculation we need the predecessor variables for relations)
         t, vin = s.tree(collapse_variables=False)
