@@ -231,7 +231,7 @@ class SHSAModel(nx.DiGraph):
             # with labels, though)
             f.write("concentrate=true")
             f.write("  node [fontname=\"sans-serif\"];\n")
-            for v in self.nodes():
+            for v in sorted(self.nodes()):
                 nodestyle = ""
                 if self.property_value_of(v, 'type') == SHSANodeType.R:
                     nodestyle += "shape=box"
