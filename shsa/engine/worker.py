@@ -134,7 +134,8 @@ class Worker(object):
         if not self.has_next():
             return []
         # choose relations
-        rrest = {}  # collect other possible relations
+        rpick = {}  # collect best relation per variable
+        rall = {}  # collect all possible relations per variable
         vnext = []  # next variables w.r.t. selected relations
         for v in self.__vars:
             assert not self.__model.provided([v]), """only vars that are
@@ -154,23 +155,28 @@ class Worker(object):
             vnext.extend(set(self.__model.predecessors(rbest)) - set([v]))
             # update substitution and utility
             self.__add(rbest, ubest)
-            # collect remaining relations (for additional workers)
-            rrest[v] = rset - set([rbest])
+            # collect all relations (for additional workers)
+            rpick[v] = rbest
+            rall[v] = rset
         # save (and filter) next variables to continue
         # provided? remove the variable from the list, to stop continuing from
         # this variable
         self.__vars = self.__model.unprovided(vnext)
         # additional workers for relations that are not handled in this worker
-        w = self.__create_workers(rrest)
+        w = self.__create_workers(rall, rpick)
         # update substitution setting for next round
         self.__sub_last = copy.deepcopy(self.__sub)
         return w
 
-    def __create_workers(self, relations):
+    def __create_workers(self, relations, chosen):
         w = []
         # create combinations of variable's relations
         rcombs = itertools.product(*relations.values())
+        # create worker for remaining combinations
         for rc in rcombs:
+            # skip already selected relations
+            if set(rc) == set(chosen.values()):
+                continue
             # save list of sequences (v, r) (variable root and relation, such
             # that worker knows where the relation comes from)
             # ASSUMPTION: dictionary stays ordered between relations.values()
