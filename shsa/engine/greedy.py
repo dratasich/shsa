@@ -53,8 +53,8 @@ class Greedy(SHSA):
             # solutions (we could here return an intermediate result)
             # remove finished worker from list
             w = W.pop(0)
-            # add worker's substitution to results
-            if w.substitution.requirements_ok():
+            if w.successful():
+                # add worker's substitution to results
                 S.append(w.substitution)
         # all solutions found
         return S

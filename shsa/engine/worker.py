@@ -144,6 +144,11 @@ class Worker(object):
             rbest = None
             ubest = 0
             rset = set(self.__model.predecessors(v)) - self.__sub.relations()
+            # no adjacent relations although unprovided variable
+            if len(rset) == 0:
+                # stop worker immediately and forever
+                self.__mark_as_failed()  # clears queue
+                return []
             for r in rset:
                 # utility of this relation
                 u = self.__utility_fct.utility_of_relation(self.__model, r, v)
@@ -184,6 +189,18 @@ class Worker(object):
             R = list(zip(list(relations.keys()), list(rc)))
             w.append(Worker(copy.deepcopy(self.__sub_last), relations=R))
         return w
+
+    def __mark_as_failed(self):
+        self.__vars = []
+        self.__rels = []
+        self.__sub = None
+
+    def successful(self):
+        if self.__sub is None:
+            return False
+        if not self.__sub.requirements_ok():
+            return False
+        return True
 
     def __str__(self):
         s = "Worker: " + self.__sub.__str__()
