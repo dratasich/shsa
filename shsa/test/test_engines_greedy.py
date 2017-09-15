@@ -20,6 +20,8 @@ class SHSAGreedyTestCase(SHSATestCase):
             ("test/model3.yaml", 'a', frozenset(['r1'])),
             ("test/model3.yaml", 'd', frozenset(['r2'])),
             ("test/model_p1.yaml", 'a', frozenset(['r1', 'r2'])),
+            ("test/model_p3.yaml", 'c', set()),
+            ("test/model_p4.yaml", 'a', set(['r5', 'r4', 'r1'])),
         ]
 
     def __check_results(self, S, no):

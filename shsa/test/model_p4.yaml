@@ -1,0 +1,45 @@
+# This testcase shall check if the combination of relations works.
+
+relations:
+  r1:
+    root:
+      in: [a, b]
+      fct: ""
+  r2:
+    root:
+      in: [c, d, e]
+      fct: ""
+  r3:
+    a:
+      in: [f]
+      fct: ""
+  r4:
+    a:
+      in: [g]
+      fct: ""
+  r5:
+    b:
+      in: [h]
+      fct: ""
+  r6:
+    b:
+      in: [i]
+      fct: ""
+
+
+properties:
+
+  # type will be generated, however 'properties' and at least 1 key have to be
+  # available
+
+  provided:
+    root: False
+    a: False
+    b: False
+    c: True
+    d: True
+    e: True
+    f: False
+    g: True
+    h: True
+    i: False

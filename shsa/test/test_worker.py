@@ -57,6 +57,17 @@ class WorkerTestCase(unittest.TestCase):
         W.extend(w1.next())
         self.assertEqual(len(W), 1,
                          "additional workers created")
+        # correct number of worker
+        model = SHSAModel(configfile="test/model_p4.yaml")
+        sub = Substitution(model=model, root='root')
+        w = Worker(sub, variables=['root'])
+        W = [w]
+        W.extend(w.next())
+        self.assertEqual(len(W), 2,
+                         "number of workers mismatch")
+        W.extend(w.next())
+        self.assertEqual(len(W), 5,
+                         "number of workers mismatch")
 
 
 if __name__ == '__main__':
