@@ -3,6 +3,8 @@ adaptation.
 
 """
 
+from future.standard_library import install_aliases
+install_aliases()
 from collections import UserList
 import networkx as nx
 from subprocess import call  # call dot to generate .png out of .dot files

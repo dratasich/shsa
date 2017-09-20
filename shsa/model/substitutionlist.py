@@ -6,6 +6,8 @@ members of root and model of `Substitution` are used).
 
 """
 
+from future.standard_library import install_aliases
+install_aliases()
 from collections import UserList
 import networkx as nx
 
