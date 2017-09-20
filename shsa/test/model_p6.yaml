@@ -35,11 +35,13 @@ properties:
   provision:
     a: []
     b: []
-    c: ["/c"]
     d: ["/d1", "/d2"]
     e: ["/e"]
     f: []
     g: ["/g"]
     h: []
-    i: ["/i"]
     j: ["/j"]
+
+  constant:
+    c: 0.2
+    i: 1

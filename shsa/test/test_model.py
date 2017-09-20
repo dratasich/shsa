@@ -69,12 +69,17 @@ class SHSAModelTestCase(unittest.TestCase):
 
     def test_provided(self):
         m = SHSAModel(configfile="test/model_p6.yaml")
+        # provision vs. provided
         self.assertTrue(m.has_property('a', 'provision'),
                         "property 'provision' missing")
         self.assertFalse(m.has_property('a', 'provided'),
                          "property 'provided' available")
+        # constants and multiple provisions
+        self.assertTrue(m.has_property('c', 'constant'),
+                        "property 'constant' missing")
         self.assertTrue(m.provided(['c', 'd']),
                         "provided check failed")
+        # filter unprovided nodes
         self.assertEqual(m.unprovided(['a', 'b', 'c']), ['a', 'b'],
                          "unprovided check failed")
 

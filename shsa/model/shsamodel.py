@@ -198,6 +198,8 @@ class SHSAModel(nx.DiGraph):
             if self.has_property(n, 'provision'):
                 if len(self.property_value_of(n, 'provision')) == 0:
                     return False
+            elif self.has_property(n, 'constant'):
+                continue
             elif not self.property_value_of(n, 'provided'):
                 return False
         return True
