@@ -67,6 +67,17 @@ class SHSAModelTestCase(unittest.TestCase):
         self.assertFalse(m.has_property('a', 'dummy'),
                          "property available although not in config")
 
+    def test_provided(self):
+        m = SHSAModel(configfile="test/model_p6.yaml")
+        self.assertTrue(m.has_property('a', 'provision'),
+                        "property 'provision' missing")
+        self.assertFalse(m.has_property('a', 'provided'),
+                         "property 'provided' available")
+        self.assertTrue(m.provided(['c', 'd']),
+                        "provided check failed")
+        self.assertEqual(m.unprovided(['a', 'b', 'c']), ['a', 'b'],
+                         "unprovided check failed")
+
 
 if __name__ == '__main__':
         unittest.main()

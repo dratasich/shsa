@@ -15,7 +15,7 @@ reconfiguration, i.e., to calculate the utility.
 Example:
     Node 'speed' has adjacents ['distance', 'acceleration']. Each node has
     properties, whereas each property has a value, e.g., 'c' = {'need': False,
-    'provision': True, 'variance': 0.1}.
+    'provision': ["/speed"], 'variance': 0.1}.
 
 """
 
@@ -195,14 +195,16 @@ class SHSAModel(nx.DiGraph):
         for n in nodes:
             if self.property_value_of(n, 'type') == SHSANodeType.R:
                 raise RuntimeError("Relations have no property 'provided'.")
-            if not self.property_value_of(n, 'provided'):
+            if self.has_property(n, 'provision'):
+                if len(self.property_value_of(n, 'provision')) == 0:
+                    return False
+            elif not self.property_value_of(n, 'provided'):
                 return False
         return True
 
     def unprovided(self, nodes):
         """Returns unprovided nodes."""
-        return [n for n in nodes
-                if self.property_value_of(n, 'provided') is False]
+        return [n for n in nodes if self.provided([n]) is False]
 
     def __str__(self):
         res = "Nodes\n"
@@ -235,7 +237,7 @@ class SHSAModel(nx.DiGraph):
                 nodestyle = ""
                 if self.property_value_of(v, 'type') == SHSANodeType.R:
                     nodestyle += "shape=box"
-                elif self.property_value_of(v, 'provided'):
+                elif self.provided([v]):
                     nodestyle += "style=filled,fillcolor=\"lightgrey\","
                 f.write(" \"{0}\" [{1}];\n".format(v, nodestyle))
             for u, v in self.edges():

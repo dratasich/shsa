@@ -1,0 +1,45 @@
+relations:
+  r1:
+    a:
+      in: [b, c]
+      fct: ""
+    c:
+      in: [a, b]
+      fct: ""
+  r2:
+    b:
+      in: [d, e]
+      fct: ""
+  r3:
+    c:
+      in: [f]
+      fct: ""
+  r4:
+    f:
+      in: [g]
+      fct: ""
+    g:
+      in: [f]
+      fct: ""
+  r5:
+    e:
+      in: [h, i, j]
+      fct: ""
+
+
+properties:
+
+  # type will be generated, however 'properties' and at least 1 key have to be
+  # available
+
+  provision:
+    a: []
+    b: []
+    c: ["/c"]
+    d: ["/d1", "/d2"]
+    e: ["/e"]
+    f: []
+    g: ["/g"]
+    h: []
+    i: ["/i"]
+    j: ["/j"]

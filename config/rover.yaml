@@ -71,18 +71,17 @@ properties:
     tcs: "sonar_ranges = dcam_points(sonar_x[a:b], sonar_y[c:d])"
     tba: "current = !boolean_and(bumper_states) * CURRENT_MAX"
 
-  provided:
-    dmin: False
-    laser_points: True
-    dcam_points: True
-    sonar_ranges: True
-    bumper_states: True
-    map: True
-    position: True
-    motor_current: True
-    current_threshold: True
-    bumper_threshold: True
-    laser_y: True
+  # set provision (list of services) or provided (bool)
+  provision:
+    dmin: []
+    laser_points: ["/scan"]
+    sonar_ranges: ["/p2os/sonar"]
+    bumper_states: ["/p2os/bumper"]
+    map: ["/map"]
+    position: ["/p2os/odom/pose"]
+    motor_current: ["/uc/adc/a0"]
+    current_threshold: [2]
+    bumper_threshold: [0.5]
 
   need:
     dmin: 1
