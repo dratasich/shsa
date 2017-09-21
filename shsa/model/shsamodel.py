@@ -23,6 +23,7 @@ from enum import IntEnum
 from subprocess import call  # call dot to generate .png out of .dot files
 import yaml  # read graph structure and properties from config file
 import networkx as nx
+import warnings
 
 
 # model #######################################################################
@@ -141,6 +142,14 @@ class SHSAModel(nx.DiGraph):
                 properties['type'][v] = 0
             for r in relations:
                 properties['type'][r] = 1
+        if 'fct' not in properties.keys():
+            # set the 'fct' attribute of relation nodes w.r.t. output
+            properties['fct'] = {}
+            for r in relations:
+                functions = {}  # collects functions of this relation
+                for o in relations[r]:
+                    functions[o] = relations[r][o]['fct']
+                properties['fct'][r] = functions
         self.__init_with_edges(edges, properties)
 
     def has_property(self, node, prop):
@@ -160,6 +169,7 @@ class SHSAModel(nx.DiGraph):
             'provided': False,
             'need': False,
             'description': "",
+            'pubrate': 0.1,
             'cost': 0,
         }
         try:
@@ -169,8 +179,8 @@ class SHSAModel(nx.DiGraph):
                 raise RuntimeError("""Property 'type' should always be
                 available.""")
             value = defaults[prop]
-            raise RuntimeWarning("""Property '{}' of node '{}' is missing,
-            using default: {}!""".format(prop, node, value))
+            warnings.warn("""Property '{}' of node '{}' is missing, using
+            default: {}!""".format(prop, node, value))
         return value
 
     def set_property_to(self, node, prop, value):
