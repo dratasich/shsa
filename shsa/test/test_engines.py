@@ -92,7 +92,9 @@ class SHSATestCase(unittest.TestCase):
         for i in range(len(self.testcases)):
             engine = Greedy(
                 configfile=self.testcases[i][self.tcindex['file']])
-            S = engine.substitute(self.testcases[i][self.tcindex['root']])
+            while(engine.substitute(self.testcases[i][self.tcindex['root']])):
+                pass
+            S = engine.last_results()
             results.append(S)
         return results
 

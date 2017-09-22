@@ -54,7 +54,9 @@ if args.dfs:
 if args.greedy:
     print("Greedy")
     engine = Greedy(configfile=args.config)
-    S = engine.substitute(args.root)
+    while(engine.substitute(args.root)):
+        pass
+    S = engine.last_results()
     print("- results:\n{}".format(S))
     print("- best: {}".format(S.best()))
 

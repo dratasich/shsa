@@ -15,46 +15,53 @@ class Greedy(SHSA):
     def __init__(self, graph=None, properties=None, configfile=None):
         """Initializes the search engine."""
         super(Greedy, self).__init__(graph, properties, configfile)
+        self.__W = None
+        """Workers of substitute search."""
+        self.__S = None
+        """Saves the results of last search."""
 
-    def substitute(self, node, lastnode=None):
+    def substitute(self, node):
         """Search a substitute for the given node with greedy algorithm.
 
         Maintains a sorted list of workers, each proceeding to search along a
         substitution path. Continue search at worker with the highest utility.
 
-        Non-recursive implementation.
-
-        Can be implemented as anytime algorithm.
-
-        Assumptions:
-        - The given node must be of type `SHSANodeType.V`, i.e., a variable of
-          the SHSA model.
-        - Variables and relations alternate in the model, i.e., a variable node
-          is only connected to relations and vice-versa.
+        Non-recursive and anytime algorithm implementation.
 
         """
-        assert self.model.is_variable(node), "Substitute variables only!"
-        # init result
-        S = SubstitutionList()  # list of substitutions (results)
-        W = []  # list of workers
-        # create first worker (empty substitution, start at root node)
-        W.append(Worker(Substitution(root=node, model=self.model),
-                        variables=[node]))
+        # initialize (at first call of new search)
+        if self.__W is None:
+            assert self.model.is_variable(node), "Substitute variables only!"
+            # init result
+            self.__S = SubstitutionList()  # list of substitutions (results)
+            self.__W = []  # list of workers
+            # create first worker (empty substitution, start at root node)
+            self.__W.append(Worker(Substitution(root=node, model=self.model),
+                                   variables=[node]))
         # work on with best worker (keep W sorted w.r.t. utility)
-        while len(W) > 0:
-            while W[0].has_next():
-                wnew = W[0].next()
+        while len(self.__W) > 0:
+            while self.__W[0].has_next():
+                wnew = self.__W[0].next()
                 # insertion sort
                 for w in wnew:
-                    for i in range(len(W)):
-                        if w.utility < W[i].utility:
-                            W.insert(i, w)
-            # current best worker done, but we move on to find better
-            # solutions (we could here return an intermediate result)
-            # remove finished worker from list
-            w = W.pop(0)
+                    i = 0
+                    while i < len(self.__W):
+                        if w.utility < self.__W[i].utility:
+                            i = i + 1
+                            continue
+                        else:
+                            break
+                    self.__W.insert(i, w)
+            # current best worker done
+            w = self.__W.pop(0)
             if w.successful():
                 # add worker's substitution to results
-                S.append(w.substitution)
-        # all solutions found
-        return S
+                self.__S.append(w.substitution)
+                return w.substitution
+        # finally cleanup workers and return no solution
+        self.__W = None
+        return None
+
+    def last_results(self):
+        """Returns results of last substitution."""
+        return self.__S
