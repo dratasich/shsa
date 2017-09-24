@@ -6,6 +6,7 @@
 # generated files
 *.dot
 *.pdf
+*.prof
 
 
 # Byte-compiled / optimized / DLL files
