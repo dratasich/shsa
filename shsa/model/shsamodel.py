@@ -171,6 +171,7 @@ class SHSAModel(nx.DiGraph):
             'description': "",
             'pubrate': 0.1,
             'cost': 0,
+            'accuracy': 1,
         }
         try:
             value = self.node[node][prop]

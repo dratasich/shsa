@@ -48,6 +48,7 @@ class UtilityNorm(Utility):
             1,
             0.5,
             0.1,
+            0.1,
         ]
         u = [1.0] * len(w)
         # only one node, perfect; the more nodes, the worse
@@ -60,7 +61,11 @@ class UtilityNorm(Utility):
         # penalize unprovided variables (penalizes more relations too)
         u[2] = 1.0 / (len(model.unprovided(rin)) + 1)
         # penalize low sample rate (or difference to desired sample rate?)
-        # penalize inaccuracy
+        # penalize inaccuracy of input variables
+        u[3] = 1.0
+        for v in rin:
+            if model.has_property(v, 'accuracy'):
+                u[3] = u[3] * model.property_value_of(v, 'accuracy')
         # weighted sum and normalize
         uf = sum([wi*ui for wi, ui in zip(w, u)]) / sum(w)
         assert uf >= 0 and uf <= 1, "utility not normalized"
