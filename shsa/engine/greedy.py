@@ -12,9 +12,10 @@ from model.substitutionlist import SubstitutionList
 class Greedy(SHSA):
     """Self-Healing by Structural Adaptation (SHSA) engine."""
 
-    def __init__(self, graph=None, properties=None, configfile=None):
+    def __init__(self, model=None, graph=None, properties=None,
+                 configfile=None):
         """Initializes the search engine."""
-        super(Greedy, self).__init__(graph, properties, configfile)
+        super(Greedy, self).__init__(model, graph, properties, configfile)
         self.__W = None
         """Workers of substitute search."""
         self.__S = None

@@ -14,9 +14,11 @@ from model.substitution import Substitution
 class DepthFirstSearch(SHSA):
     """Self-Healing by Structural Adaptation (SHSA) engine."""
 
-    def __init__(self, graph=None, properties=None, configfile=None):
+    def __init__(self, model=None, graph=None, properties=None,
+                 configfile=None):
         """Initializes the search engine."""
-        super(DepthFirstSearch, self).__init__(graph, properties, configfile)
+        super(DepthFirstSearch, self).__init__(model, graph, properties,
+                                               configfile)
 
     def substitute(self, node, lastnode=None):
         """Returns all possible substitutes, via DFS.

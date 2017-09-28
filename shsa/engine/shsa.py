@@ -3,16 +3,20 @@
 
 """
 
-from model.shsamodel import SHSAModel, SHSANodeType
+from model.shsamodel import SHSAModel
 
 
 class SHSA(object):
     """Self-Healing by Structural Adaptation (SHSA) engine."""
 
-    def __init__(self, graph=None, properties=None, configfile=None):
+    def __init__(self, model=None, graph=None, properties=None,
+                 configfile=None):
         """Initializes the engine with a model."""
-        self.__model = SHSAModel(graph, properties, configfile)
-        """Knowledge base for SHSA."""
+        if model is not None:
+            self.__model = model
+            """Knowledge base for SHSA."""
+        else:
+            self.__model = SHSAModel(graph, properties, configfile)
 
     def __get_model(self):
         """Returns the underlying SHSA model."""
