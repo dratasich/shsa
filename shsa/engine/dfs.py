@@ -71,6 +71,8 @@ class DepthFirstSearch(SHSA):
             # checking requirements
             S.update(lastnode, self.model)
             # filter the substitutions that fulfil the requirements
+            # TODO memory vs performance (if filtering is done at the end once,
+            # it is much faster)
             new = list(filter(lambda s: s.requirements_ok(), S))
             S = SubstitutionList(new)
         elif self.model.is_variable(node):
