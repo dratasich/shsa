@@ -2,6 +2,7 @@ import unittest
 import itertools
 
 from engine.shsa import SHSA
+from engine.orr import ORR
 from engine.dfs import DepthFirstSearch
 from engine.greedy import Greedy
 from model.substitutionlist import SubstitutionList
@@ -62,6 +63,25 @@ class SHSATestCase(unittest.TestCase):
 
     # run testcases (methods below are called by subclass to execute testcases;
     # add a method for each new engine)
+
+    def substitute_orr(self):
+        """Returns testcase results of orr search."""
+        if not self.testcases:  # no testcases
+            return
+        results = []
+        for i in range(len(self.testcases)):
+            engine = ORR(configfile=self.testcases[i][self.tcindex['file']])
+            engine.substitute_init()
+            _, tree = engine.substitute(
+                self.testcases[i][self.tcindex['root']])
+            S = SubstitutionList()
+            if tree is not None:
+                S.add_substitution([n for n in tree
+                                    if engine.model.is_relation(n)])
+                S.update(self.testcases[i][self.tcindex['root']],
+                         model=engine.model)
+            results.append(S)
+        return results
 
     def substitute_dfs(self):
         """Returns testcase results of depth-first search."""

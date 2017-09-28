@@ -6,29 +6,20 @@ Systems.
 
 """
 
-from graph.graph import Graph
+from engine.shsa import SHSA
 
 
-class ORR(object):
+class ORR(SHSA):
     """Ontology-based runtime reconfiguration (ORR) engine."""
 
-    def __init__(self, graph, properties):
-        """Initializes the engine with a model.
-
-        The keys represent the vertex IDs. Keys of graph and properties must
-        match, i.e., each node must have initilialized properties.
-
-        graph -- Graph structure as dictionary.
-        properties -- Type and provision of nodes in the graph.
-
-        """
-        self.__model = Graph(graph)
-        self.__type = {}
+    def __init__(self, model=None, graph=None, properties=None,
+                 configfile=None):
+        """Initializes the search engine."""
+        super(ORR, self).__init__(model, graph, properties, configfile)
         self.__provided = {}
-        for n in self.__model.nodes():
-            self.__type[n] = properties[n]['type']
-            if self.__type[n] == 'P':
-                self.__provided[n] = properties[n]['provided']
+        for n in self.model.nodes():
+            if self.model.is_variable(n):
+                self.__provided[n] = self.model.provided([n])
 
     def substitute_init(self):
         """Initializes the variables for a substitute search."""
@@ -39,7 +30,7 @@ class ORR(object):
         self.__sub_service = {}
         self.__sub_tree = {}
 
-    def substitute_search(self, r):
+    def substitute(self, r):
         """Original substitute search by Oliver.
 
         Call substitute_init first!
@@ -47,10 +38,17 @@ class ORR(object):
         This method is called recursively and is self-contained.
 
         """
-        m = self.__model
+        m = self.model
+        # substitute called for a variable although provided
+        if m.provided([r]):
+            return [r], [r]
         # for all n \elemof r.inputs do
-        for n in m.adjacents(r):
-            if self.__type[n] == 'T':
+        rinputs = set(m.predecessors(r))
+        if len(rinputs) == 0:
+            # no relations, no substitution possible
+            return None, None
+        for n in rinputs:
+            if m.is_relation(n):
                 # transfer concept
                 # omit: check requirements
                 # init substitution path
@@ -58,11 +56,8 @@ class ORR(object):
                 T = [n]
                 provided = True
                 # for all i \elemof n.inputs \ {r} do
-                for i in m.adjacents(n):
-                    # ignore where we are coming from
-                    if i == r:
-                        continue
-                    print i
+                ninputs = set(self.model.predecessors(n)) - set([r])
+                for i in ninputs:
                     # check provision
                     if self.__provided[i] is False:
                         # property not provided -> try to substitute
@@ -70,7 +65,7 @@ class ORR(object):
                             # n.visited <- true
                             self.__sub_visited.append(i)
                             # recursive substitute search
-                            s, t = self.substitute_search(i)
+                            s, t = self.substitute(i)
                             # if result is empty
                             if not (s or t):
                                 provided = False
@@ -99,7 +94,7 @@ class ORR(object):
                         # n.visited <- true
                         self.__sub_visited.append(i)
                         # recursive substitute search
-                        s, t = self.substitute_search(i)
+                        s, t = self.substitute(i)
                         if s and t:
                             self.__sub_provided.append(n)
                             self.__sub_service[n] = s
