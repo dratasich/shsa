@@ -1,17 +1,24 @@
 """Experiments for IPSN paper."""
 
-from profilehooks import timecall
+from profilehooks import profile, timecall
 import argparse
 
 from model.shsamodel import SHSAModel
-# from engine.orr import ORR
+from model.substitutionlist import SubstitutionList
+from engine.orr import ORR
 from engine.dfs import DepthFirstSearch
 from engine.greedy import Greedy
 
 
 @timecall(immediate=False)
 def orr(model, root):
-    pass
+    engine = ORR(model)
+    engine.substitute_init()
+    _, tree = engine.substitute(root)
+    S = SubstitutionList()
+    S.add_substitution([n for n in tree if model.is_relation(n)])
+    S.update(root, model=model)
+    return S
 
 
 @timecall(immediate=False)
@@ -26,7 +33,7 @@ def dfs(model, root):
        and engine.model.provided([root]):
         S.add_substitution()  # add empty substitution
     # workaround for dfs done --
-    return S.best()
+    return S
 
 
 @timecall(immediate=False)
@@ -35,7 +42,7 @@ def rss(model, root):
     while(engine.substitute(root)):
         pass
     S = engine.last_results()
-    return S.best()
+    return S
 
 
 class Benchmark(object):
@@ -56,16 +63,17 @@ class Benchmark(object):
 
     def run(self):
         """Execute all engines under test n times."""
-        best = {}
+        S = {}
         for i in range(self.__args.ncalls):
-            best['orr'] = orr(self._model, self._root)
+            S['orr'] = orr(self._model, self._root)
         for i in range(self.__args.ncalls):
-            best['dfs'] = dfs(self._model, self._root)
+            S['dfs'] = dfs(self._model, self._root)
         for i in range(self.__args.ncalls):
-            best['rss'] = rss(self._model, self._root)
+            S['rss'] = rss(self._model, self._root)
         # check if the best result is the same
-        print("rss: {}".format(best['rss']))
-        for k, v in best.items():
-            if v is not None and best['rss'].relations() != v.relations():
+        print("rss: {}".format(S['rss']))
+        for k, v in S.items():
+            if v is not None and \
+               S['rss'].best().relations() != v.best().relations():
                 print("mismatch")
                 print("{}: {}".format(k, v))
