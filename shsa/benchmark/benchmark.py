@@ -21,7 +21,8 @@ def orr(model, root):
     return S
 
 
-@timecall(immediate=False)
+# @timecall(immediate=False)
+@profile
 def dfs(model, root):
     engine = DepthFirstSearch(model)
     S = engine.substitute(root)
@@ -36,11 +37,20 @@ def dfs(model, root):
     return S
 
 
-@timecall(immediate=False)
+# @timecall(immediate=False)
+@profile
 def rss(model, root):
     engine = Greedy(model)
     while(engine.substitute(root)):
         pass
+    S = engine.last_results()
+    return S
+
+
+@timecall(immediate=False)
+def rss_once(model, root):
+    engine = Greedy(model)
+    engine.substitute(root)
     S = engine.last_results()
     return S
 
@@ -65,11 +75,24 @@ class Benchmark(object):
         """Execute all engines under test n times."""
         S = {}
         for i in range(self.__args.ncalls):
-            S['orr'] = orr(self._model, self._root)
-        for i in range(self.__args.ncalls):
             S['dfs'] = dfs(self._model, self._root)
         for i in range(self.__args.ncalls):
             S['rss'] = rss(self._model, self._root)
+        # check if the best result is the same
+        print("rss: {}".format(S['rss']))
+        for k, v in S.items():
+            if v is not None and \
+               S['rss'].best().relations() != v.best().relations():
+                print("mismatch")
+                print("{}: {}".format(k, v))
+
+    def run_once(self):
+        """Execute all engines under test n times."""
+        S = {}
+        for i in range(self.__args.ncalls):
+            S['orr'] = orr(self._model, self._root)
+        for i in range(self.__args.ncalls):
+            S['rss'] = rss_once(self._model, self._root)
         # check if the best result is the same
         print("rss: {}".format(S['rss']))
         for k, v in S.items():

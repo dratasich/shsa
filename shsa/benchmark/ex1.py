@@ -23,7 +23,7 @@ class Ex1(benchmark.Benchmark):
 
 
 if __name__ == "__main__":
-    print("""test/model_p6.yaml""")
     ex1 = Ex1()
     ex1.setup()
     ex1.run()
+    # ex1.run_once()
