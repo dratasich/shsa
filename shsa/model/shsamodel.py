@@ -57,9 +57,16 @@ class SHSAModel(nx.DiGraph):
             self.__init_from_file(configfile)
         elif (graph_dict is not None) and (properties is not None):
             self.__init_with_graph(graph_dict, properties)
+        elif properties is not None:
+            self.__init_with_nxgraph(properties)
         else:
             raise RuntimeError("""either config file or graph structure &
             properties must be provided""")
+
+    def __init_with_nxgraph(self, properties):
+        super(SHSAModel, self).__init__()
+        for name in properties:
+            nx.set_node_attributes(self, name, properties[name])
 
     def __init_from_file(self, configfile):
         """Initializes a model based on a yaml file.

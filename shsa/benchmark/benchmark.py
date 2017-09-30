@@ -21,11 +21,11 @@ def orr(model, root):
     return S
 
 
-# @timecall(immediate=False)
-@profile
+@timecall(immediate=False)
+# @profile
 def dfs(model, root):
     engine = DepthFirstSearch(model)
-    S = engine.substitute(root)
+    S = engine.substitute(root, substitute_provided=False)
     # workaround for dfs start --
     # dfs cannot handle substitutions where the root node is already
     # provided (recursive implementation would cause double entries),
@@ -37,8 +37,8 @@ def dfs(model, root):
     return S
 
 
-# @timecall(immediate=False)
-@profile
+@timecall(immediate=False)
+# @profile
 def rss(model, root):
     engine = Greedy(model)
     while(engine.substitute(root)):
@@ -61,42 +61,51 @@ class Benchmark(object):
         self._model = model
         self._root = root
         self._parser = argparse.ArgumentParser(description="""Experiment 1.""")
-        self.__parse_args()  # register arguments
-        self.__args = self._parser.parse_args()
+        self._parse_args()  # register arguments
+        self._args = self._parser.parse_args()
+        self._results = {}
+        self._failed = False
 
-    def __parse_args(self):
+    def __get_model(self):
+        return self._model
+
+    def __set_model(self, model):
+        self._model = model
+
+    model = property(__get_model, __set_model)
+
+    def _parse_args(self):
         self._parser.add_argument('-n', '--ncalls', type=int, default=10,
                                   help="Number of substitute-calls.")
 
     def setup(self):
         raise NotImplementedError
 
+    def check(self):
+        raise NotImplementedError
+
     def run(self):
         """Execute all engines under test n times."""
-        S = {}
-        for i in range(self.__args.ncalls):
-            S['dfs'] = dfs(self._model, self._root)
-        for i in range(self.__args.ncalls):
-            S['rss'] = rss(self._model, self._root)
-        # check if the best result is the same
-        print("rss: {}".format(S['rss']))
-        for k, v in S.items():
-            if v is not None and \
-               S['rss'].best().relations() != v.best().relations():
-                print("mismatch")
-                print("{}: {}".format(k, v))
+        try:
+            for i in range(self._args.ncalls - 1):
+                dfs(self._model, self._root)
+            for i in range(self._args.ncalls - 1):
+                rss(self._model, self._root)
+            self._results['dfs'] = dfs(self._model, self._root)
+            self._results['rss'] = rss(self._model, self._root)
+        except Exception as e:
+            self._failed = True
+            raise
 
     def run_once(self):
         """Execute all engines under test n times."""
-        S = {}
-        for i in range(self.__args.ncalls):
-            S['orr'] = orr(self._model, self._root)
-        for i in range(self.__args.ncalls):
-            S['rss'] = rss_once(self._model, self._root)
-        # check if the best result is the same
-        print("rss: {}".format(S['rss']))
-        for k, v in S.items():
-            if v is not None and \
-               S['rss'].best().relations() != v.best().relations():
-                print("mismatch")
-                print("{}: {}".format(k, v))
+        try:
+            for i in range(self._args.ncalls - 1):
+                orr(self._model, self._root)
+            for i in range(self._args.ncalls - 1):
+                rss_once(self._model, self._root)
+            self._results['orr'] = orr(self._model, self._root)
+            self._results['rss'] = rss(self._model, self._root)
+        except Exception as e:
+            self._failed = True
+            raise
