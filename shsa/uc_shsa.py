@@ -47,7 +47,7 @@ S = None  # substitution list
 if args.dfs:
     print("DFS")
     engine = DepthFirstSearch(model)
-    S = engine.substitute(args.root)
+    S = engine.substitute(args.root, substitute_provided=False)
     # when the root is already provided, an empty substitution is also valid
     if engine.model.provided([args.root]):
         s = Substitution(root=args.root, model=engine.model)
