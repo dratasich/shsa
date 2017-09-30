@@ -145,5 +145,40 @@ class SHSADFSProvidedTestCase(SHSATestCase):
             self.__check_results(results[i], i)
 
 
+class SHSADFSProvidedDontContinueTestCase(SHSATestCase):
+    """Test SHSA substitution without searching further at provided variables.
+
+    """
+
+    def setUp(self):
+        self.tcindex = {
+            'file': 0,
+            'root': 1,
+            'result': 2,
+        }
+        self.testcases = [
+            ("test/model_p6.yaml", 'a',  frozenset([
+                frozenset(['r1', 'r2']),
+            ])),
+        ]
+
+    def __check_results(self, S, no):
+        # check if number of relations match
+        self.assertEqual(len(S.relations()),
+                         len(self.testcases[no][self.tcindex['result']]),
+                         """number of substitution trees mismatch
+                         (TC{})""".format(no))
+        # check if all solution trees are in the results
+        self.assertEqual(len(S.relations()
+                             & self.testcases[no][self.tcindex['result']]),
+                         len(S.relations()),
+                         """substitution result wrong (TC{})""".format(no))
+
+    def test_dfs(self):
+        results = self.substitute_dfs(substitute_provided=False)
+        for i in range(len(results)):
+            self.__check_results(results[i], i)
+
+
 if __name__ == '__main__':
         unittest.main()

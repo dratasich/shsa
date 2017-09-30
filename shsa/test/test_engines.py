@@ -83,7 +83,7 @@ class SHSATestCase(unittest.TestCase):
             results.append(S)
         return results
 
-    def substitute_dfs(self):
+    def substitute_dfs(self, substitute_provided=True):
         """Returns testcase results of depth-first search."""
         if not self.testcases:  # no testcases
             return
@@ -91,7 +91,8 @@ class SHSATestCase(unittest.TestCase):
         for i in range(len(self.testcases)):
             engine = DepthFirstSearch(
                 configfile=self.testcases[i][self.tcindex['file']])
-            S = engine.substitute(self.testcases[i][self.tcindex['root']])
+            S = engine.substitute(self.testcases[i][self.tcindex['root']],
+                                  None, substitute_provided)
             # workaround for dfs start --
             # dfs cannot handle substitutions where the root node is already
             # provided (recursive implementation would cause double entries),

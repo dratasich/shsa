@@ -20,8 +20,12 @@ class DepthFirstSearch(SHSA):
         super(DepthFirstSearch, self).__init__(model, graph, properties,
                                                configfile)
 
-    def substitute(self, node, lastnode=None):
+    def substitute(self, node, lastnode=None, substitute_provided=True):
         """Returns all possible substitutes, via DFS.
+
+        Parameters:
+        - substitute_provided: If `False`, dfs does not substitute provided
+          variables, i.e., dfs does not search further provided variables.
 
         Recursive implementation.
 
@@ -38,9 +42,11 @@ class DepthFirstSearch(SHSA):
         adjacents = set(self.model.predecessors(node)) - set([lastnode])
         # save solution of each adjacent separately
         for n in adjacents:
-            s = self.substitute(n, node)
-            if len(s) > 0:
-                solutions.append(s)
+            if self.model.is_relation(n) or (self.model.is_variable(n) and
+               (substitute_provided or not self.model.provided([n]))):
+                s = self.substitute(n, node, substitute_provided)
+                if len(s) > 0:
+                    solutions.append(s)
         # depending on the type of node the solutions are combined or added
         if self.model.is_relation(node):
             # create combinations (take not / take for each adjacent)
