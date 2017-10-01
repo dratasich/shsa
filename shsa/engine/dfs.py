@@ -20,7 +20,8 @@ class DepthFirstSearch(SHSA):
         super(DepthFirstSearch, self).__init__(model, graph, properties,
                                                configfile)
 
-    def substitute(self, node, lastnode=None, substitute_provided=True):
+    def substitute(self, node, lastnode=None, substitute_provided=True,
+                   check_requirements=True):
         """Returns all possible substitutes, via DFS.
 
         Parameters:
@@ -44,7 +45,8 @@ class DepthFirstSearch(SHSA):
         for n in adjacents:
             if self.model.is_relation(n) or (self.model.is_variable(n) and
                (substitute_provided or not self.model.provided([n]))):
-                s = self.substitute(n, node, substitute_provided)
+                s = self.substitute(n, node, substitute_provided,
+                                    check_requirements)
                 if len(s) > 0:
                     solutions.append(s)
         # depending on the type of node the solutions are combined or added
@@ -67,14 +69,15 @@ class DepthFirstSearch(SHSA):
                                               model=self.model, root=node))
             # add current relation node to all substitutions
             S.add_node_to(node)
-            # root node (= last variable node) will/must be updated before
-            # checking requirements
-            S.update(lastnode, self.model)
             # filter the substitutions that fulfil the requirements
-            # TODO memory vs performance (if filtering is done at the end once,
-            # it is much faster)
-            new = list(filter(lambda s: s.requirements_ok(), S))
-            S = SubstitutionList(new)
+            # check_requirements: memory vs performance (if filtering is done
+            # at the end once, it is much faster)
+            if check_requirements:
+                # root node (= last variable node) will/must be updated before
+                # checking requirements
+                S.update(lastnode, self.model)
+                new = list(filter(lambda s: s.requirements_ok(), S))
+                S = SubstitutionList(new)
         elif self.model.is_variable(node):
             # simply add returned solutions
             for s in solutions:

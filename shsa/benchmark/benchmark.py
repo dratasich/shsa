@@ -22,10 +22,30 @@ def orr(model, root):
 
 
 @timecall(immediate=False)
-# @profile
 def dfs(model, root):
     engine = DepthFirstSearch(model)
-    S = engine.substitute(root, substitute_provided=False)
+    S = engine.substitute(root, substitute_provided=False,
+                          check_requirements=False)
+    # workaround for dfs start --
+    # dfs cannot handle substitutions where the root node is already
+    # provided (recursive implementation would cause double entries),
+    # so we add the solution (empty substitution) manually
+    if engine.model.is_variable(root) \
+       and engine.model.provided([root]):
+        S.add_substitution()  # add empty substitution
+    # workaround for dfs done --
+    # check requirements
+    S.update(root, model)
+    new = list(filter(lambda s: s.requirements_ok(), S))
+    S = SubstitutionList(new)
+    return S
+
+
+@timecall(immediate=False)
+def dfs_mem(model, root):
+    engine = DepthFirstSearch(model)
+    S = engine.substitute(root, substitute_provided=False,
+                          check_requirements=True)
     # workaround for dfs start --
     # dfs cannot handle substitutions where the root node is already
     # provided (recursive implementation would cause double entries),
@@ -38,7 +58,6 @@ def dfs(model, root):
 
 
 @timecall(immediate=False)
-# @profile
 def rss(model, root):
     engine = Greedy(model)
     while(engine.substitute(root)):
@@ -81,31 +100,36 @@ class Benchmark(object):
     def setup(self):
         raise NotImplementedError
 
-    def check(self):
+    def check(self, algorithms=[]):
         raise NotImplementedError
 
-    def run(self):
+    def run(self, algorithms=['dfs', 'dfs_mem', 'rss', 'orr', 'rss_once']):
         """Execute all engines under test n times."""
         try:
-            for i in range(self._args.ncalls - 1):
-                dfs(self._model, self._root)
-            for i in range(self._args.ncalls - 1):
-                rss(self._model, self._root)
-            self._results['dfs'] = dfs(self._model, self._root)
-            self._results['rss'] = rss(self._model, self._root)
+            if 'dfs' in algorithms:
+                for i in range(self._args.ncalls - 1):
+                    dfs(self._model, self._root)
+                self._results['dfs'] = dfs(self._model, self._root)
+            if 'dfs_mem' in algorithms:
+                for i in range(self._args.ncalls - 1):
+                    dfs_mem(self._model, self._root)
+                self._results['dfs_mem'] = dfs_mem(self._model, self._root)
+            if 'rss' in algorithms:
+                for i in range(self._args.ncalls - 1):
+                    rss(self._model, self._root)
+                self._results['rss'] = rss(self._model, self._root)
+            if 'orr' in algorithms:
+                for i in range(self._args.ncalls - 1):
+                    orr(self._model, self._root)
+                self._results['orr'] = orr(self._model, self._root)
+            if 'rss_once' in algorithms:
+                for i in range(self._args.ncalls - 1):
+                    rss_once(self._model, self._root)
+                self._results['rss_once'] = rss_once(self._model, self._root)
         except Exception as e:
             self._failed = True
             raise
-
-    def run_once(self):
-        """Execute all engines under test n times."""
-        try:
-            for i in range(self._args.ncalls - 1):
-                orr(self._model, self._root)
-            for i in range(self._args.ncalls - 1):
-                rss_once(self._model, self._root)
-            self._results['orr'] = orr(self._model, self._root)
-            self._results['rss'] = rss(self._model, self._root)
-        except Exception as e:
-            self._failed = True
-            raise
+        # group the algorithms for comparison
+        g1 = set(['dfs', 'dfs_mem', 'rss']) & set(algorithms)
+        g2 = set(['orr', 'rss_once']) & set(algorithms)
+        return [list(g1), list(g2)]

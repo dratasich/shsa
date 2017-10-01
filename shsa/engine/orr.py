@@ -30,7 +30,7 @@ class ORR(SHSA):
         self.__sub_service = {}
         self.__sub_tree = {}
 
-    def substitute(self, r):
+    def substitute(self, r, lastrel=None):
         """Original substitute search by Oliver.
 
         Call substitute_init first!
@@ -43,7 +43,7 @@ class ORR(SHSA):
         if m.provided([r]):
             return [r], [r]
         # for all n \elemof r.inputs do
-        rinputs = set(m.predecessors(r))
+        rinputs = set(m.predecessors(r)) - set([lastrel])
         if len(rinputs) == 0:
             # no relations, no substitution possible
             return None, None
@@ -65,7 +65,7 @@ class ORR(SHSA):
                             # n.visited <- true
                             self.__sub_visited.append(i)
                             # recursive substitute search
-                            s, t = self.substitute(i)
+                            s, t = self.substitute(i, n)
                             # if result is empty
                             if not (s or t):
                                 provided = False
@@ -94,7 +94,7 @@ class ORR(SHSA):
                         # n.visited <- true
                         self.__sub_visited.append(i)
                         # recursive substitute search
-                        s, t = self.substitute(i)
+                        s, t = self.substitute(i, n)
                         if s and t:
                             self.__sub_provided.append(n)
                             self.__sub_service[n] = s
@@ -104,3 +104,4 @@ class ORR(SHSA):
                     # property provided
                     self.__sub_visited.add(i)
                     return self.__sub_service[n], self.__sub_tree[n]
+        assert True, "line shall not be reached"

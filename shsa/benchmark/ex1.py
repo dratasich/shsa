@@ -15,7 +15,7 @@ class Ex1(benchmark.Benchmark):
                                   help="Branching factor.")
         self._parser.add_argument('-d', '--depth', type=int, default=2,
                                   help="Depth of the tree.")
-        self._parser.add_argument('-p', '--plot', type=str, default="ex1",
+        self._parser.add_argument('-p', '--plot', type=str,
                                   help="""Plots the model to the given
                                   filename (without extension).""")
 
@@ -79,45 +79,57 @@ class Ex1(benchmark.Benchmark):
         self._model = SHSAModel(G, properties=props)
         self._root = root
 
-    def check(self):
-        print("results:")
+    def check(self, algorithms=[]):
         if not self._failed:
             # check results
+            # single results won't be compared
+            single = True
             for alg, sublist in self._results.items():
-                print("\n  {}".format(alg))
+                # check only listed algorithms
+                if alg not in algorithms:
+                    continue
+                if len(sublist) != 1:
+                    single = False
+                print("\n  {}:".format(alg))
                 print("    len: {}".format(len(sublist)))
-                print("    S: {}".format(list(sublist)))
+                if self._failed:
+                    print("    S: {}".format(list(sublist)))
             # compare results
-            print("\n  diff:")
-            diffok = True
+            print()
+            if single:
+                return
             for a1, s1 in self._results.items():
                 for a2, s2 in self._results.items():
+                    # check only listed algorithms
+                    if not (a1 in algorithms and a2 in algorithms):
+                        continue
                     diff1 = s1.relations() - s2.relations()
                     diff2 = s2.relations() - s1.relations()
                     if len(diff1) > 0:
-                        diffok = False
-                        print("    {}-{}: {}".format(a1, a2, diff1))
+                        print("  {} - {}: {}".format(a1, a2, diff1))
                     if len(diff2) > 0:
-                        diffok = False
-                        print("    {}-{}: {}".format(a2, a1, diff2))
-            print("")
+                        print("  {} - {}: {}".format(a2, a1, diff2))
 
     def __str__(self):
         ret = ""
         if self._failed:
-            ret += "model: \n"
+            ret += "status: failed\n\n"
+            ret += "model:\n"
             ret += "  nodes: {}\n".format(self._model.nodes())
             ret += "  edges: {}\n\n".format(self._model.edges())
+        else:
+            ret += "status: ok\n\n"
         ret += "parameters:\n"
-        ret += "  root: {}\n".format(self._root)
+        ret += "  ncalls: {}\n".format(self._args.ncalls)
         ret += "  branch: {}\n".format(self._args.branch)
         ret += "  depth: {}\n".format(self._args.depth)
+        ret += "  root: {}\n".format(self._root)
         ret += "  numnodes: {}\n".format(len(self._model.nodes()))
         ret += "  numedges: {}\n".format(len(self._model.edges()))
         return ret
 
     def export_model(self):
-        if self._args.plot != "":
+        if self._args.plot is not None:
             ex1.model.write_dot(self._args.plot, oformat="pdf")
 
 
@@ -125,12 +137,15 @@ if __name__ == "__main__":
     ex1 = Ex1()
     ex1.setup()
     try:
-        ex1.run()
-        # ex1.run_once()
+        groups = ex1.run(['rss', 'rss_once', 'orr', 'dfs_mem'])
     except Exception as e:
         raise
     finally:
         print(ex1)
-        ex1.check()
+        # separately check different types of algorithms executed by run
+        print("results:")
+        for algs in groups:
+            ex1.check(algs)
         ex1.export_model()
-        print("measurements: ")
+        print("\nmeasurements:")
+        # here come the profilehooks results
