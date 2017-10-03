@@ -54,10 +54,9 @@ class UtilityNorm(Utility):
         # only one node, perfect; the more nodes, the worse
         u[0] = 1.0 / len(rin)
         # penalize computational costs (cost > 0, penalizes more relations)
+        u[1] = 1.0
         if model.has_property(r, 'cost'):
             u[1] = 1.0 / model.property_value_of(r, 'cost')
-        else:
-            u[1] = 1
         # penalize unprovided variables (penalizes more relations too)
         u[2] = 1.0 / (len(model.unprovided(rin)) + 1)
         # penalize low sample rate (or difference to desired sample rate?)

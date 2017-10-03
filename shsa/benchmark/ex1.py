@@ -58,7 +58,7 @@ class Ex1(benchmark.Benchmark):
     def setup(self):
         # args check
         if self._args.depth % 2 == 1:
-            raise RuntimeError("""Depth must be an even number (leafs of the
+            raise RuntimeError("""Depth must be an even number (leaves of the
             graph must be variables).""")
         # generate graph structure
         G = nx.generators.classic.balanced_tree(self._args.branch,
@@ -130,7 +130,7 @@ class Ex1(benchmark.Benchmark):
 
     def export_model(self):
         if self._args.plot is not None:
-            ex1.model.write_dot(self._args.plot, oformat="pdf")
+            self._model.write_dot(self._args.plot, oformat="pdf")
 
 
 if __name__ == "__main__":
