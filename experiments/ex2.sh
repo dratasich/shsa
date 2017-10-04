@@ -13,9 +13,9 @@ echo "%depth, model, shsa, shsa_n, shsa_et, dfs, dfs_n, dfs_et, orr, orr_n, orr_
 n=10  # number of ex2.py runs per model
 m=100  # different models (only one is generated for a ex2.py run)
 a=0.2
-depths1="2 4 6"  # different depth
-depths2="8 10 12 14" # 6 8 10 12 14 16 18"  # different depth
-depths3="" # 6 8 10 12 14 16 18"  # different depth
+depths1="2 4 6 8"  # different depth
+depths2="10 12 14 16"  # different depth
+depths3="18"  # different depth
 
 for d in $depths1
 do
@@ -23,7 +23,7 @@ do
     for i in $(seq "$m")
     do
         # run experiment n times (one model)
-        params="-n $n -b 2 -d $d -a $a -i rss_once orr dfs_mem"
+        params="-n $n -b 2 -d $d -a $a rss_once orr dfs_mem"
         res=$(PYTHONPATH=../shsa python3 -O ../shsa/benchmark/ex2.py $params | grep -A 3 "measurements" | tail -n 3)
         echo "$d,$i,"$res | sed -e "s/ /,/g" >> ex2.csv
     done
@@ -35,7 +35,7 @@ do
     for i in $(seq "$m")
     do
         # run experiment n times (one model)
-        params="-n $n -b 2 -d $d -a $a -i rss_once orr"
+        params="-n $n -b 2 -d $d -a $a rss_once orr"
         res=$(PYTHONPATH=../shsa python3 -O ../shsa/benchmark/ex2.py $params | grep -A 2 "measurements" | tail -n 2)
         echo "$d,$i,"$res | sed -e "s/ /,-,-,-,/g" >> ex2.csv
     done
@@ -47,7 +47,7 @@ do
     for i in $(seq "$m")
     do
         # run experiment n times (one model)
-        params="-n $n -b 2 -d $d -a $a -i rss_once"
+        params="-n $n -b 2 -d $d -a $a rss_once"
         res=$(PYTHONPATH=../shsa python3 -O ../shsa/benchmark/ex2.py $params | grep -A 1 "measurements" | tail -n 1)
         echo "$d,$i,"$res",-,-,-,-,-,-" >> ex2.csv
     done
