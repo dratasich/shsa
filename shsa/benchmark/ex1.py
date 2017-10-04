@@ -7,7 +7,6 @@ from model.shsamodel import SHSAModel, SHSANodeType
 class Ex1(benchmark.Benchmark):
     def __init__(self):
         super(Ex1, self).__init__()
-        self.__visited = None
 
     def _parse_args(self):
         super(Ex1, self)._parse_args()
@@ -19,40 +18,41 @@ class Ex1(benchmark.Benchmark):
                                   help="""Plots the model to the given
                                   filename (without extension).""")
 
-    def __properties_type(self, graph, node, ntype=SHSANodeType.V):
-        """Recursively sets the type of a node (alternating between variable
-        and relation)."""
-        self.__visited.append(node)
+    def __properties_type(self):
         props_type = {}
-        props_type[node] = ntype
-        if ntype == SHSANodeType.V:
-            ntype_next = SHSANodeType.R
-        elif ntype == SHSANodeType.R:
-            ntype_next = SHSANodeType.V
-        else:
-            assert True, "no/wrong node type"
-        pre = set(graph.predecessors(node)) - set(self.__visited)
-        for n in pre:
-            props = self.__properties_type(graph, n, ntype_next)
-            props_type.update(props)
+        # (linear) walk through nodes to set type
+        first_node = 0
+        ntypes = [SHSANodeType.V, SHSANodeType.R]
+        for d in range(self._args.depth + 1):
+            # number of nodes at level d
+            num_nodes = self._args.branch**d
+            # set equal type on level d
+            ntype = ntypes[d % 2]
+            for n in range(first_node, first_node + num_nodes):
+                props_type[n] = ntype
+            # set id of first node of next level
+            first_node = first_node + num_nodes
         return props_type
 
-    def __properties_provided(self, graph, node):
-        """Recursively sets the provided property of a node (leafs will be
-        provided)."""
-        self.__visited.append(node)
+    def __properties_provided(self):
         props_prov = {}
-        # following nodes
-        pre = set(graph.predecessors(node)) - set(self.__visited)
-        # reached leaf?
-        if len(pre) == 0:
-            props_prov[node] = True
-        else:
-            props_prov[node] = False
-        # set provided recursively for following nodes
-        for n in pre:
-            props = self.__properties_provided(graph, n)
-            props_prov.update(props)
+        # (linear) walk through nodes to set provided
+        first_node = 0
+        for d in range(0, self._args.depth + 1):
+            # number of nodes at level d
+            num_nodes = self._args.branch**d
+            # skip relations
+            if (d % 2) == 1:
+                first_node = first_node + num_nodes
+                continue
+            # set provided value of leaves to True
+            for n in range(first_node, first_node + num_nodes):
+                if d == self._args.depth:
+                    props_prov[n] = True
+                else:
+                    props_prov[n] = False
+            # set id of first node of next level
+            first_node = first_node + num_nodes
         return props_prov
 
     def setup(self):
@@ -65,19 +65,12 @@ class Ex1(benchmark.Benchmark):
                                                 self._args.depth)
         G = G.to_directed()
         # properties
-        root = 0
         props = {}
-        # set type
-        self.__visited = []
-        ntype = self.__properties_type(G, root, SHSANodeType.V)
-        props['type'] = ntype
-        # set provided
-        self.__visited = []
-        nprovided = self.__properties_provided(G, root)
-        props['provided'] = nprovided
+        props['type'] = self.__properties_type()
+        props['provided'] = self.__properties_provided()
         # set internal variables model and root for experiment
         self._model = SHSAModel(G, properties=props)
-        self._root = root
+        self._root = 0
 
     def check(self, algorithms=[]):
         if not self._failed:
@@ -111,7 +104,7 @@ class Ex1(benchmark.Benchmark):
                         print("  {} - {}: {}".format(a2, a1, diff2))
 
     def __str__(self):
-        ret = ""
+        ret = "\n"
         if self._failed:
             ret += "status: failed\n\n"
             ret += "model:\n"
@@ -134,18 +127,18 @@ class Ex1(benchmark.Benchmark):
 
 
 if __name__ == "__main__":
-    ex1 = Ex1()
-    ex1.setup()
+    ex = Ex1()
+    ex.setup()
     try:
-        groups = ex1.run(['rss', 'rss_once', 'orr', 'dfs_mem'])
+        groups = ex.run(['rss', 'rss_once', 'orr', 'dfs_mem'])
     except Exception as e:
         raise
     finally:
-        print(ex1)
+        print(ex)
         # separately check different types of algorithms executed by run
         print("results:")
         for algs in groups:
-            ex1.check(algs)
-        ex1.export_model()
+            ex.check(algs)
+        ex.export_model()
         print("\nmeasurements:")
         # here come the profilehooks results
