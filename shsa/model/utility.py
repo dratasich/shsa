@@ -85,7 +85,7 @@ class UtilityNorm(Utility):
         t, vin = s.tree(collapse_variables=False)
         t = t.to_undirected()  # ignore direction
         # get all predecessors (by bfs)
-        pre = nx.bfs_predecessors(t, s.root)
+        pre = dict(nx.bfs_predecessors(t, s.root))
         # product of utilities (of all relations given their predecessors)
         u = 1.0
         for r in s:

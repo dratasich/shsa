@@ -68,7 +68,7 @@ class Ex2(Ex1):
         super(Ex2, self).setup()
         # set provided
         props_prov = self.__properties_provided()
-        nx.set_node_attributes(self._model, 'provided', props_prov)
+        nx.set_node_attributes(self._model, props_prov, name='provided')
 
     def __str__(self):
         ret = super(Ex2, self).__str__()

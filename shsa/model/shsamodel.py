@@ -65,8 +65,8 @@ class SHSAModel(nx.DiGraph):
 
     def __init_with_nxgraph(self, properties):
         super(SHSAModel, self).__init__()
-        for name in properties:
-            nx.set_node_attributes(self, name, properties[name])
+        for name in properties.keys():
+            nx.set_node_attributes(self, properties[name], name=name)
 
     def __init_from_file(self, configfile):
         """Initializes a model based on a yaml file.
@@ -80,7 +80,7 @@ class SHSAModel(nx.DiGraph):
                 data = yaml.load(f)
             except yaml.YAMLError as e:
                 print(e)
-            if 'relations' in data.keys():
+            if 'relations' in data.keys() and 'properties' in data.keys():
                 self.__init_with_relations(data['relations'],
                                            data['properties'])
             elif 'graph' in data.keys():
@@ -97,8 +97,8 @@ class SHSAModel(nx.DiGraph):
 
         """
         super(SHSAModel, self).__init__(edges)
-        for name in properties:
-            nx.set_node_attributes(self, name, properties[name])
+        for name in properties.keys():
+            nx.set_node_attributes(self, properties[name], name=name)
 
     def __init_with_graph(self, graph_dict, properties):
         """Extracts edges from a graph dictionary ({node:list(adjacents)}).

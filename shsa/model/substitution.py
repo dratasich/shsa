@@ -145,20 +145,22 @@ class Substitution(UserList):
                     g.add_edge(a, node)
         # remove intermediate variables
         if collapse_variables:
+            nremove = []
             for n in g.nodes():
                 # skip relation nodes
                 if self.model.is_relation(n):
                     continue
                 # get all variable nodes with 2 edges
-                e1 = g.predecessors(n)
-                e2 = g.successors(n)
+                e1 = list(g.predecessors(n))
+                e2 = list(g.successors(n))
                 if len(e1) != 1 or len(e2) != 1:
                     continue
-                e1 = g.predecessors(n)[0]
-                e2 = g.successors(n)[0]
+                e1 = e1[0]
+                e2 = e2[0]
                 g.add_edge(e1, e2)
-                # remove variable node including adjacent edges
-                g.remove_node(n)
+                nremove.append(n)
+            # finally remove variable nodes including adjacent edges
+            g.remove_nodes_from(nremove)
         return g, inputs
 
     def write_dot(self, basefilename, oformat=None):
