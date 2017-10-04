@@ -21,6 +21,9 @@ class Ex3(Benchmark):
         self._parser.add_argument('-a', '--availability', type=float,
                                   default=0.5, help="""Probability that a
                                   variable is provided in [0,1].""")
+        self._parser.add_argument('-c', '--costs', action='store_true',
+                                  help="""Assigns a random cost [1,10] to a
+                                  relation.""")
         self._parser.add_argument('algorithms', type=str, nargs='+',
                                   choices=['rss', 'rss_once', 'orr', 'dfs',
                                            'dfs_mem'], help="""Algorithms to
@@ -67,6 +70,25 @@ class Ex3(Benchmark):
             first_node = first_node + num_nodes
         return props_prov
 
+    # have no effect, because also completely random - branches equal
+    def __properties_cost(self):
+        props_cost = {}
+        # (linear) walk through nodes to set provided
+        first_node = 0
+        for d in range(0, self._args.depth + 1):
+            # number of nodes at level d
+            num_nodes = self._args.branch**d
+            # skip variables
+            if (d % 2) == 0:
+                first_node = first_node + num_nodes
+                continue
+            # set cost randomly
+            for n in range(first_node, first_node + num_nodes):
+                props_cost[n] = random.uniform(1, 10)
+            # set id of first node of next level
+            first_node = first_node + num_nodes
+        return props_cost
+
     def setup(self):
         # args check
         if self._args.depth % 2 == 1:
@@ -77,19 +99,14 @@ class Ex3(Benchmark):
                                                 self._args.depth)
         G = G.to_directed()
         # properties
-        root = 0
         props = {}
-        # set type
-        self.__visited = []
-        ntype = self.__properties_type()
-        props['type'] = ntype
-        # set provided
-        self.__visited = []
-        nprovided = self.__properties_provided()
-        props['provided'] = nprovided
+        props['type'] = self.__properties_type()
+        props['provided'] = self.__properties_provided()
+        if self._args.costs:
+            props['cost'] = self.__properties_cost()
         # set internal variables model and root for experiment
         self._model = SHSAModel(G, properties=props)
-        self._root = root
+        self._root = 0
 
     def check(self, algorithms=[]):
         if not self._failed:
