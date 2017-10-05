@@ -1,9 +1,9 @@
 #! /usr/bin/env python2.7
 #
 # __author__ Denise Ratasich
-# __date__ 2017-10-03
+# __date__ 2017-10-05
 #
-# Plots execution times collected by ex2.py.
+# Plots execution times collected by ex3.py.
 #
 
 import argparse
@@ -39,40 +39,43 @@ print
 et = {}
 et['SHSA (best)'] = data['shsa_et'] / data['shsa_n']
 et['DFS (first)'] = data['orr_et'] / data['orr_n']
-et['DFS'] = data['dfs_et'] / data['dfs_n']
 
-# get depth
+# get branch
 # CAVEAT: assumes the depth is sorted in the csvfile!
-depth = np.unique(data['depth'])
+branch = np.unique(data['branch'])
 
 # get number of experiments per depth
-firstdepth = data['depth'][0]
-m = len(filter(lambda i: i == firstdepth, data['depth']))
+firstbranch = data['branch'][0]
+m = len(filter(lambda i: i == firstbranch, data['branch']))
 
-print "depth: " + str(depth)
+print "branch: " + str(branch)
 print "different models: " + str(m)
 
-# split per depth
+# split per branch
 et_split = {}
 for name, data in et.items():
     et_split[name] = np.split(data, len(data)/m)
 
 # measures to plot
 et_measures = {}
-# create arrays (element for each depth) for measures per algorithm
+# create arrays (element for each branch) for measures per algorithm
 for name in et_split.keys():
     et_measures[name] = {}
     et_measures[name]['avg'] = []
     et_measures[name]['std'] = []
     et_measures[name]['min'] = []
     et_measures[name]['max'] = []
-# calculate measures per depth
+# calculate measures per branch
 for name, data in et_split.items():
     for a in data:
         et_measures[name]['avg'].append(np.mean(a))
         et_measures[name]['std'].append(np.std(a))
         et_measures[name]['min'].append(min(a))
         et_measures[name]['max'].append(max(a))
+
+print "avg: "
+for name in et_measures.keys():
+    print "  " + name + ": " + str(et_measures[name]['avg'])
 
 
 print
@@ -100,22 +103,22 @@ def marker(name):
 
 # errorbar (assumes data is normally distributed)
 for name, measure in et_measures.items():
-    plt.errorbar(depth, measure['avg'], yerr=measure['std'], lolims = True,
+    plt.errorbar(branch, measure['avg'], yerr=measure['std'], lolims = True,
                  label=name, linestyle=linestyle(name), marker=marker(name),
                  color=color(name))
 
 # plot additionally the min-max values
 for name, measure in et_measures.items():
-    plt.plot(depth, measure['max'], linestyle='',
-             marker=marker(name), color=color(name))
+    plt.plot(branch, measure['max'], linestyle='', marker=marker(name),
+             color=color(name))
 
 # # boxplot
 # plt.boxplot(startup, positions=startup_n)
 # plt.boxplot(shutdown, positions=shutdown_n)
 
 #plt.title("Overhead of starting a node in ROS")
-plt.xlabel("depth")
-plt.xlim(0,max(depth))
+plt.xlabel("branching factor")
+plt.xlim(0,max(branch))
 plt.ylabel("time (s)")
 plt.ylim(0,args.ymax)
 plt.legend(loc='upper left')

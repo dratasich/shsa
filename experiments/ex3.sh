@@ -14,7 +14,7 @@ n=10  # number of ex2.py runs per model
 m=100  # different models (only one is generated for a ex2.py run)
 a=0.2
 d=6  # constant depth
-branches="2 3 4 5 6" # "2 4 6"  # different branching factor
+branches="1 2 3 4"  # different branching factor
 
 for b in $branches
 do
