@@ -38,7 +38,7 @@ print
 # divide exec time by number of calls
 et = {}
 et['SHSA (best)'] = data['shsa_et'] / data['shsa_n']
-et['DFS (first)'] = data['orr_et'] / data['orr_n']
+et['ORR'] = data['orr_et'] / data['orr_n']
 
 # get branch
 # CAVEAT: assumes the depth is sorted in the csvfile!

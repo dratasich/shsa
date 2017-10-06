@@ -14,7 +14,7 @@ n=10  # number of ex4.py runs per model
 m=100  # different models (only one is generated for a ex4.py run)
 a=0.2
 d=8  # constant depth
-branches="1 2 3 4 5"  # different branching factor
+branches="1 2 3 4 5 6"  # different branching factor
 
 for b in $branches
 do
