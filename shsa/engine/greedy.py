@@ -28,6 +28,12 @@ class Greedy(SHSA):
         self.__S = None
         """Saves the results of last search."""
 
+    def __create_worker(self, node):
+        if len(self.__W) == 0 and len(self.__Wp) > 0:
+            u, r, rp = self.__Wp.pop(0)
+            self.__W.append(Worker(r, root=node, model=self.model, utility=u,
+                                   relations=rp))
+
     def substitute(self, node):
         """Search a substitute for the given node with greedy algorithm.
 
@@ -49,10 +55,8 @@ class Greedy(SHSA):
             self.__W.append(Worker(root=node, model=self.model,
                                    variables=[node]))
         # instantiate new best worker (from potential list) if no one left
-        elif len(self.__W) == 0 and len(self.__Wp) > 0:
-            u, r, rp = self.__Wp.pop(0)
-            self.__W.append(Worker(r, root=node, model=self.model, utility=u,
-                                   relations=rp))
+        else:
+            self.__create_worker(node)
         # work on with best worker (keep W sorted w.r.t. utility)
         while len(self.__W) > 0:
             while self.__W[0].has_next():
@@ -93,6 +97,8 @@ class Greedy(SHSA):
                 # add worker's substitution to results
                 self.__S.append(w)
                 return w
+            else:
+                self.__create_worker(node)
         # finally cleanup workers and return no solution
         self.__W = None
         return None
