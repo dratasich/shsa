@@ -37,7 +37,7 @@ print
 
 # divide exec time by number of calls
 et = {}
-et['SHSA (best)'] = data['shsa_et'] / data['shsa_n']
+et['SH-PGSA (best)'] = data['shsa_et'] / data['shsa_n']
 et['ORR'] = data['orr_et'] / data['orr_n']
 et['DFS'] = data['dfs_et'] / data['dfs_n']
 
