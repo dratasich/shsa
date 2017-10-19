@@ -8,7 +8,7 @@ from model.substitution import Substitution
 from model.substitutionlist import SubstitutionList
 
 from engine.dfs import DepthFirstSearch
-from engine.greedy import Greedy
+from engine.shpgsa import SHPGSA
 from engine.orr import ORR
 
 
@@ -22,8 +22,8 @@ parser.add_argument('-c', '--config', type=str,
                     help="SHSA model in a config file.")
 parser.add_argument('-d', '--dfs', action="store_true",
                     help="Depth-first-search.")
-parser.add_argument('-g', '--greedy', action="store_true",
-                    help="Greedy search.")
+parser.add_argument('-p', '--shpgsa', action="store_true",
+                    help="SH-PGSA search.")
 parser.add_argument('-o', '--orr', action="store_true",
                     help="ORR search.")
 args = parser.parse_args()
@@ -55,9 +55,9 @@ if args.dfs:
     print("- results:\n{}".format(S))
     print("- best: {}".format(S.best()))
 
-if args.greedy:
-    print("Greedy")
-    engine = Greedy(model)
+if args.shpgsa:
+    print("SH-PGSA")
+    engine = SHPGSA(model)
     while(engine.substitute(args.root)):
         pass
     S = engine.last_results()

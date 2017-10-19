@@ -7,7 +7,7 @@ from model.shsamodel import SHSAModel
 from model.substitutionlist import SubstitutionList
 from engine.orr import ORR
 from engine.dfs import DepthFirstSearch
-from engine.greedy import Greedy
+from engine.shpgsa import SHPGSA
 
 
 @timecall(immediate=False)
@@ -58,8 +58,8 @@ def dfs_mem(model, root):
 
 
 @timecall(immediate=False)
-def rss(model, root):
-    engine = Greedy(model)
+def shpgsa(model, root):
+    engine = SHPGSA(model)
     while(engine.substitute(root)):
         pass
     S = engine.last_results()
@@ -67,8 +67,8 @@ def rss(model, root):
 
 
 @timecall(immediate=False)
-def rss_once(model, root):
-    engine = Greedy(model)
+def shpgsa_once(model, root):
+    engine = SHPGSA(model)
     engine.substitute(root)
     S = engine.last_results()
     return S
@@ -103,7 +103,8 @@ class Benchmark(object):
     def check(self, algorithms=[]):
         raise NotImplementedError
 
-    def run(self, algorithms=['dfs', 'dfs_mem', 'rss', 'orr', 'rss_once']):
+    def run(self, algorithms=['dfs', 'dfs_mem', 'shpgsa', 'orr',
+                              'shpgsa_once']):
         """Execute all engines under test n times."""
         try:
             if 'dfs' in algorithms:
@@ -114,22 +115,23 @@ class Benchmark(object):
                 for i in range(self._args.ncalls - 1):
                     dfs_mem(self._model, self._root)
                 self._results['dfs_mem'] = dfs_mem(self._model, self._root)
-            if 'rss' in algorithms:
+            if 'shpgsa' in algorithms:
                 for i in range(self._args.ncalls - 1):
-                    rss(self._model, self._root)
-                self._results['rss'] = rss(self._model, self._root)
+                    shpgsa(self._model, self._root)
+                self._results['shpgsa'] = shpgsa(self._model, self._root)
             if 'orr' in algorithms:
                 for i in range(self._args.ncalls - 1):
                     orr(self._model, self._root)
                 self._results['orr'] = orr(self._model, self._root)
-            if 'rss_once' in algorithms:
+            if 'shpgsa_once' in algorithms:
                 for i in range(self._args.ncalls - 1):
-                    rss_once(self._model, self._root)
-                self._results['rss_once'] = rss_once(self._model, self._root)
+                    shpgsa_once(self._model, self._root)
+                self._results['shpgsa_once'] = shpgsa_once(self._model,
+                                                           self._root)
         except Exception as e:
             self._failed = True
             raise
         # group the algorithms for comparison
-        g1 = set(['dfs', 'dfs_mem', 'rss']) & set(algorithms)
-        g2 = set(['orr', 'rss_once']) & set(algorithms)
+        g1 = set(['dfs', 'dfs_mem', 'shpgsa']) & set(algorithms)
+        g2 = set(['orr', 'shpgsa_once']) & set(algorithms)
         return [list(g1), list(g2)]

@@ -2,7 +2,7 @@ import unittest
 import itertools
 
 from test.test_engines import SHSATestCase
-from engine.greedy import Greedy
+from engine.shpgsa import SHPGSA
 
 
 class SHSABestTestCase(SHSATestCase):
@@ -32,8 +32,8 @@ class SHSABestTestCase(SHSATestCase):
                          self.testcases[no][self.tcindex['best']],
                          """best substitution wrong (TC{})""".format(no))
 
-    def test_greedy(self):
-        results = self.substitute_greedy()  # execute testcases
+    def test_shpgsa(self):
+        results = self.substitute_shpgsa()  # execute testcases
         for i in range(len(results)):
             self.__check_results(results[i], i)
 

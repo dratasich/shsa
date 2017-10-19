@@ -2,11 +2,11 @@ import unittest
 import itertools
 
 from test.test_engines import SHSATestCase
-from engine.greedy import Greedy
+from engine.shpgsa import SHPGSA
 
 
-class SHSAGreedyTestCase(SHSATestCase):
-    """Tests substitution results of greedy search."""
+class SHSAPGTestCase(SHSATestCase):
+    """Tests substitution results of SH-PGSA search."""
 
     def setUp(self):
         self.tcindex = {
@@ -42,8 +42,8 @@ class SHSAGreedyTestCase(SHSATestCase):
                          self.testcases[no][self.tcindex['success']],
                          """success state mismatch (TC{})""".format(no))
 
-    def test_greedy(self):
-        results = self.substitute_greedy()  # execute testcases
+    def test_shpgsa(self):
+        results = self.substitute_shpgsa()  # execute testcases
         for i in range(len(results)):
             self.__check_results(results[i], i)
 

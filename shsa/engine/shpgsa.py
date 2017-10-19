@@ -1,5 +1,5 @@
-"""Self-Healing by Structural Adaptation (SHSA) using a greedy algorithm to
-find a substitute.
+"""Self-Healing by Structural Adaptation (SHSA) using properties to guide the
+search of a substitute.
 
 """
 
@@ -9,13 +9,13 @@ from model.substitution import Substitution
 from model.substitutionlist import SubstitutionList
 
 
-class Greedy(SHSA):
-    """Self-Healing by Structural Adaptation (SHSA) engine."""
+class SHPGSA(SHSA):
+    """Self-Healing by Property-Guided Structural Adaptation (SH-PGSA) engine."""
 
     def __init__(self, model=None, graph=None, properties=None,
                  configfile=None):
         """Initializes the search engine."""
-        super(Greedy, self).__init__(model, graph, properties, configfile)
+        super(SHPGSA, self).__init__(model, graph, properties, configfile)
         self.__W = None
         """Active workers of substitute search."""
         self.__Wp = []
@@ -35,7 +35,7 @@ class Greedy(SHSA):
                                    relations=rp))
 
     def substitute(self, node):
-        """Search a substitute for the given node with greedy algorithm.
+        """Search a substitute for the given node.
 
         Maintains a sorted list of potential workers. Once the utility of the
         current worker drops below the utility of a potential worker, the

@@ -4,7 +4,7 @@ import itertools
 from engine.shsa import SHSA
 from engine.orr import ORR
 from engine.dfs import DepthFirstSearch
-from engine.greedy import Greedy
+from engine.shpgsa import SHPGSA
 from model.substitutionlist import SubstitutionList
 
 
@@ -105,13 +105,13 @@ class SHSATestCase(unittest.TestCase):
             results.append(S)
         return results
 
-    def substitute_greedy(self):
-        """Returns testcase results of greedy search."""
+    def substitute_shpgsa(self):
+        """Returns testcase results of SH-PGSA search."""
         if not self.testcases:  # no testcases
             return
         results = []
         for i in range(len(self.testcases)):
-            engine = Greedy(
+            engine = SHPGSA(
                 configfile=self.testcases[i][self.tcindex['file']])
             while(engine.substitute(self.testcases[i][self.tcindex['root']])):
                 pass
