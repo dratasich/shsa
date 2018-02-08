@@ -81,7 +81,7 @@ if __name__ == "__main__":
     ex = CaseStudy()
     ex.setup()
     try:
-        groups = ex.run(['rss', 'rss_once', 'orr', 'dfs_mem', 'dfs'])
+        groups = ex.run(['shpgsa', 'shpgsa_once', 'orr', 'dfs_mem', 'dfs'])
     except Exception as e:
         raise
     finally:

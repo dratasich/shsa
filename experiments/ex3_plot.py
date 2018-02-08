@@ -3,7 +3,7 @@
 # __author__ Denise Ratasich
 # __date__ 2017-10-05
 #
-# Plots execution times collected by ex3.py.
+# Plots execution times collected by ex3.py or ex4.py.
 #
 
 import argparse
@@ -16,7 +16,7 @@ SHSA (best).""")
 parser.add_argument("--ymax", type=float,
                     help="max limit y to plot")
 parser.add_argument("csvfile", type=str,
-                    help="file containing results of ex2.py")
+                    help="file containing results of ex[3|4].py")
 args = parser.parse_args()
 
 
@@ -84,7 +84,7 @@ print
 
 print "* plots"
 
-fig = plt.figure(figsize=(8,4))
+fig = plt.figure(figsize=(8,2))
 
 
 # styles

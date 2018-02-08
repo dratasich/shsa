@@ -1,0 +1,134 @@
+#
+# SHSA model of drivetrain (Höftberger, 2015).
+#
+# 2018-02-07
+# Denise Ratasich
+#
+
+# generate graph from given relations; edges are generated depending on the
+# outputs/functions defined here
+relations:
+  r1:
+    steering_angle:
+      in: [wheel_angle]
+      fct: "9*wheel_angle"
+  r2:
+    wheel_angle:
+      in: [wheel_base, curve_radius]
+      fct: "arctan(wheel_base / curve_radius)"
+  r3:
+    curve_radius:
+      in: [lateral_acceleration, speed]
+      fct: "r = v^2/a"
+  r4:
+    curve_radius:
+      in: [track_width, w_l, w_r]
+      fct: "(w_l + w_r)/(w_l - w_r)*b/2"
+  r5:
+    angular_speed:
+      in: [w_l, w_r]
+      fct: "(w_l + w_r)/2"
+  r6:
+    speed:
+      in: [angular_speed, dynamic_radius]
+      fct: "rd * w"
+  r7:
+    speed:
+      in: [longitudinal_acceleration, time]
+      fct: "integral ( longitudinal_acceleration dt )"
+  r8:
+    speed:
+      in: [distance, time]
+      fct: "d distance / dt"
+
+# node properties
+# - type: 0..variable, 1..relation (must match enum in shsamodel.py)
+# - fct: relation has a function for code generation
+# - provision: topics that provide this variable
+# - constant: marks nodes as constants and specifies this value
+properties:
+
+  # type will be added (w.r.t. 'relations' given above)
+  # fct will be added (w.r.t. 'relations' given above)
+
+  # If you use the model for a ROS application a full variable-to-topic mapping
+  # is needed (by shsa_node.py of shsa_ros)! Specify: provision, constant,
+  # need.
+
+  # set provision (list of services) or provided (bool, default: False)
+  # needed by ROS package (use provision instead of provided)
+  provision:
+    steering_angle: []
+    wheel_angle: []
+    wheel_base: ["/car/wheel_base"]
+    curve_radius: []
+    lateral_acceleration: ["/car/lateral_acceleration"]
+    angular_speed: []
+    speed: ["/car/speed"]
+    longitudinal_acceleration: ["/car/longitudinal_acceleration"]
+    time: []
+    distance: []
+    w_l: ["/car/w_l"]
+    w_r: ["/car/w_r"]
+    dynamic_radius: []
+    track_width: ["/car/track_width"]
+
+  # constants where no topic is available for publishing the value
+  # needed by ROS package (otherwise a topic has to be provided for constants)
+  # constant:
+  #   current_th: 2
+  #   bumper_th: 0.5
+
+  # needed variables are provisions that are in use
+  need:
+    steering_angle: ["/car/steering_angle/data"]
+
+  # workaround for properties of provisions
+  # TODO: extract from provision_properties
+  accuracy:
+    wheel_base: 0.99
+    lateral_acceleration: 0.2
+    speed: 0.95
+    longitudinal_acceleration: 0.3
+    w_l: 0.9
+    w_r: 0.9
+    track_width: 0.99
+    angular_speed: 0.85
+
+  # workaround for shsa_node.py of shsa_ros
+  # TODO: extract from provision_properties
+  period:
+    steering_angle: 0.1
+
+
+# provision properties
+# - need: true if topic is used/needed
+# - pubrate: publishing rate of the topic
+# - accuracy
+provision_properties:
+
+  # properties below are per provision and shall not be saved to a variable in
+  # the SHSA model, but in a dictionary with key=provision
+
+  "/car/steering_angle/data":
+    need: True
+    pubrate: 10
+    # TODO: accuracy shall be derived
+
+  "/car/wheel_base":
+    accuracy: 0.99
+
+  "/car/lateral_acceleration":
+    accuracy: 0.3
+
+  "/car/speed":
+    accuracy: 0.9
+
+  "/car/longitudinal_acceleration":
+    accuracy: 0.5
+
+  "/car/wheel_angular_speed":
+    accuracy: 0.8
+
+  "/car/track_width":
+    accuracy: 0.99

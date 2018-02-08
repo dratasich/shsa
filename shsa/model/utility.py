@@ -45,10 +45,10 @@ class UtilityNorm(Utility):
         variable(s)""".format(r)
         # utility function by weighted sum
         w = [
-            1,
+            0.3,
             0.5,
             0.1,
-            0.1,
+            0.5,
         ]
         u = [1.0] * len(w)
         # only one node, perfect; the more nodes, the worse

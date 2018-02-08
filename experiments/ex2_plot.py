@@ -81,7 +81,7 @@ print
 
 print "* plots"
 
-fig = plt.figure(figsize=(8,4))
+fig = plt.figure(figsize=(8,3))
 
 
 # styles
