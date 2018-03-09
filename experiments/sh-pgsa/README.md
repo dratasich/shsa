@@ -7,3 +7,6 @@ for instance:
 $ ./ex2.sh
 $ ./ex2_plot.py ex2.csv
 ```
+
+Moved to a subfolder of of shsa/experiments. Paths have to be adapted before
+use.
