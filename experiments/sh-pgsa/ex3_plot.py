@@ -84,11 +84,11 @@ print
 
 print "* plots"
 
-fig = plt.figure(figsize=(8,2))
+fig = plt.figure(figsize=(8,3))
 
 
 # styles
-styles = [['-', '--', '-.'], ['r', 'g', 'b'], ['+', '+', '+']]
+styles = [['-', '--', '-.'], ['r', 'g', 'b'], ['+', '+', '+'], ['x', 'x', 'x']]
 names = et_measures.keys()
 
 def linestyle(name):
@@ -100,16 +100,24 @@ def color(name):
 def marker(name):
     return styles[2][names.index(name)]
 
+def marker_max(name):
+    return styles[3][names.index(name)]
+
 
 # errorbar (assumes data is normally distributed)
 for name, measure in et_measures.items():
-    plt.errorbar(branch, measure['avg'], yerr=measure['std'], lolims = True,
-                 label=name, linestyle=linestyle(name), marker=marker(name),
+    y = np.array(measure['avg'])
+    ystd = np.array(measure['std'])
+    # keep all values of y positive (std deviation cut at 0)
+    ylower = np.maximum(1e-4, y - ystd)
+    ystdlower = y - ylower
+    plt.errorbar(branch, y, yerr=[ystdlower, ystd], label=name,
+                 linestyle=linestyle(name), marker=marker(name),
                  color=color(name))
 
 # plot additionally the min-max values
 for name, measure in et_measures.items():
-    plt.plot(branch, measure['max'], linestyle='', marker=marker(name),
+    plt.plot(branch, measure['max'], linestyle='', marker=marker_max(name),
              color=color(name))
 
 # # boxplot
