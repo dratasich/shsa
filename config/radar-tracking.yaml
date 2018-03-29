@@ -1,0 +1,39 @@
+relations:
+  r12:
+    s:
+      in: [m, p]
+      fct: "f1"
+    m:
+      in: [s, p]
+      fct: "f2"
+  r3:
+    s:
+      in: [n, t]
+      fct: "f3"
+  r4:
+    s:
+      in: [t, p]
+      fct: "f4"
+  r6:
+    s:
+      in: [s, t]
+      fct: "f6"
+  r7:
+    s:
+      in: [n]
+      fct: "f7"
+
+
+properties:
+
+  # type will be generated, however this dictionary 'properties' and at least 1
+  # key/element (here: 'provision') has to be available
+
+  provision:
+    m: ["i_m"]
+    s: ["i_s"]
+    t: ["i_t"]
+    n: ["i_n"]
+
+  constant:
+    p: ["i_p"]  # pose of the sensor

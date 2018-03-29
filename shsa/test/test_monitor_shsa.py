@@ -25,20 +25,19 @@ class SHSAMonitorTestCase(unittest.TestCase):
 
     def test_monitor(self):
         m = SHSAMonitor(model=self.__model, domain=self.__domain)
-        itoms = {'/s/measurement': 0.0, '/s/detection': 0.0, '/n/detection':
-                 0.0, '/s/pose': [0, 0, 0], '/clock': 0.0}
-        exp_status = {'/s/measurement': ItomFaultStatusType.OK, '/s/detection':
-                      ItomFaultStatusType.OK, '/n/detection':
-                      ItomFaultStatusType.OK, '/s/pose':
-                      ItomFaultStatusType.OK, '/clock': ItomFaultStatusType.OK}
+        itoms = {'i_m': 0.0, 'i_s': 0.0, 'i_n': 0.0, 'i_p': [0, 0, 0], 'i_t':
+                 0.0}
+        exp_status = {'i_m': ItomFaultStatusType.OK, 'i_s':
+                      ItomFaultStatusType.OK, 'i_n': ItomFaultStatusType.OK,
+                      'i_p': ItomFaultStatusType.OK, 'i_t':
+                      ItomFaultStatusType.OK}
         rec_status = m.monitor(itoms)
         self.assertEqual(rec_status, exp_status)
-        itoms = {'/s/measurement': 1.0, '/s/detection': 0.0, '/n/detection':
-                 0.0, '/s/pose': [0, 0, 0], '/clock': 0.0}
-        exp_status = {'/s/measurement': ItomFaultStatusType.FAULTY,
-                      '/s/detection': ItomFaultStatusType.OK, '/n/detection':
-                      ItomFaultStatusType.OK, '/s/pose':
-                      ItomFaultStatusType.FAULTY, '/clock':
+        itoms = {'i_m': 1.0, 'i_s': 0.0, 'i_n': 0.0, 'i_p': [0, 0, 0], 'i_t':
+                 0.0}
+        exp_status = {'i_m': ItomFaultStatusType.FAULTY, 'i_s':
+                      ItomFaultStatusType.OK, 'i_n': ItomFaultStatusType.OK,
+                      'i_p': ItomFaultStatusType.FAULTY, 'i_t':
                       ItomFaultStatusType.OK}
         rec_status = m.monitor(itoms)
         self.assertEqual(rec_status, exp_status)

@@ -71,22 +71,23 @@ class SHSAMonitor(Monitor):
         # domain)
         if self.__domain == 's':
             self.__relations = {}
-            r12 = {'in': [('m', '/s/measurement'), ('p', '/s/pose')],
+            r12 = {'in': [('m', 'i_m'), ('p', 'i_p')],
                    'fct': "m"}
             self.__relations['r12'] = r12
-            r3 = {'in': [('n', '/n/detection'), ('t', '/clock')], 'fct': "n"}
+            r3 = {'in': [('n', 'i_n'), ('t', 'i_t')], 'fct': "n"}
             self.__relations['r3'] = r3
-            r6 = {'in': [('s', '/s/detection'), ('t', '/clock')],
+            r6 = {'in': [('s', 'i_s'), ('t', 'i_t')],
                   'fct': "s"}
             self.__relations['r6'] = r6
-            r7 = {'in': [('n', '/n/detection')],
+            r7 = {'in': [('n', 'i_n')],
                   'fct': "n if True else 1"}
             self.__relations['r7'] = r7
         # The relations are chosen such that only the given/provided itoms are
-        # used, so instead of writing the variables as inputs, e.g.,
-        # r12 = {'in': ['m', 'p'], 'fct': "1"}
-        # we write the itoms as inputs directly:
-        # r12 = {'in': ['/s/measurement', '/s/pose'], 'fct': "1"}
+        # used. The itoms hold the values (not the variables) so instead of
+        # writing the variables as inputs, e.g.,
+        # r12 = {'in': ['m', 'p'], 'fct': "m"}
+        # we add the itoms to the inputs:
+        # r12 = {'in': [('m', 'i_m'), ('p', 'i_p')], 'fct': "m"}
         return self.__relations
 
     def __execute_relation(self, r, itoms):
