@@ -70,9 +70,7 @@ class WorkerTestCase(unittest.TestCase):
         W.extend(w.next())
         self.assertEqual(len(W), 2,
                          "number of workers mismatch")
-        W.extend(w.next())
-        self.assertEqual(len(W), 5,
-                         "number of workers mismatch")
+        self.assertTrue(w.successful(), "successful state mismatch")
 
 
 if __name__ == '__main__':

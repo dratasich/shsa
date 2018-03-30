@@ -21,7 +21,6 @@ class SHSAORRTestCase(SHSATestCase):
             ("test/model3.yaml", 'd', frozenset(['r2']), True),
             ("test/model_p1.yaml", 'a', frozenset(['r1', 'r2']), True),
             ("test/model_p3.yaml", 'c', set(), True),
-            ("test/model_p4.yaml", 'root', set(['r5', 'r4', 'r1']), True),
             ("test/model_p6.yaml", 'a', frozenset(['r1', 'r2']), True),
         ]
 
