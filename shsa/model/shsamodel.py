@@ -257,6 +257,12 @@ class SHSAModel(nx.DiGraph):
                 nodestyle = ""
                 if self.property_value_of(v, 'type') == SHSANodeType.R:
                     nodestyle += "shape=box"
+                    fctstr = []
+                    for out, fct in self.property_value_of(v, 'fct').items():
+                        fctstr.append(out + " = " + fct)
+                    if len(fctstr) > 0:
+                        nodestyle += ",label=\"{}: {}\"".format(v,
+                                         "\n".join(fctstr))
                 elif self.provided([v]):
                     nodestyle += "style=filled,fillcolor=\"lightgrey\","
                 f.write(" \"{0}\" [{1}];\n".format(v, nodestyle))

@@ -77,6 +77,15 @@ class SubstitutionTestCase(unittest.TestCase):
         self.assertEqual(set(vin), {'g'},
                          "wrong variable source nodes")
 
+    def test_execute(self):
+        m = SHSAModel(configfile="test/model_e1.yaml")
+        s = Substitution(['r1', 'r2'], model=m, root='a')
+        result = s.execute({'b': 0, 'd': 1, 'e': 2})
+        self.assertEqual(result, 2, "execute gives wrong result")
+        s = Substitution(['r3', 'r4'], model=m, root='a')
+        result = s.execute({'g': 0, 'h': 1, 'i': 2, 'j': 3})
+        self.assertEqual(result, 36, "execute gives wrong result")
+
 
 class SubstitutionListTestCase(unittest.TestCase):
     """Test cases for substitution results."""

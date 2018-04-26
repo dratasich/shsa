@@ -163,6 +163,12 @@ class Substitution(UserList):
             g.remove_nodes_from(nremove)
         return g, inputs
 
+    def execute(self, inputs):
+        output = None
+        # code generate substitution tree (ROS shsa_node.py)
+        raise NotImplementedError
+        return output
+
     def write_dot(self, basefilename, oformat=None):
         """Saves the model as dot-file and generates an image if oformat given.
 
