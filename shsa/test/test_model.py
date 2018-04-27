@@ -37,6 +37,8 @@ class SHSAModelTestCase(unittest.TestCase):
                         "wrong initialized property")
         self.assertEqual(m.property_value_of('a', 'type'), SHSANodeType.V,
                          "wrong initialized property")
+        # nodes check
+        self.assertEqual(set(m.variables), set(['a', 'c']))
 
     def test_setup_model_from_file(self):
         # load with classical graph dict given in the yaml
@@ -82,6 +84,20 @@ class SHSAModelTestCase(unittest.TestCase):
         # filter unprovided nodes
         self.assertEqual(m.unprovided(['a', 'b', 'c']), ['a', 'b'],
                          "unprovided check failed")
+
+    def test_variable_to_itoms_map(self):
+        m = SHSAModel(configfile="test/model_p6.yaml")
+        # map variable to provisions
+        itoms = m.itoms('a')
+        self.assertEqual(itoms, [])
+        itoms = m.itoms('d')
+        self.assertEqual(itoms, ['/d1', '/d2'])
+        # map variable to constant
+        itoms = m.itoms('c')
+        self.assertEqual(itoms, 0.2, "map from variable to constant failed")
+        # map itoms to variables
+        variable = m.variable('/d1')
+        self.assertEqual(variable, 'd')
 
 
 if __name__ == '__main__':

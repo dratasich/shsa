@@ -62,6 +62,26 @@ class SHSAModel(nx.DiGraph):
         else:
             raise RuntimeError("""either config file or graph structure &
             properties must be provided""")
+        # init mapping between variables and itoms
+        self.__map = None
+        # get mappings from model {variable: [itoms]}
+        try:
+            # itoms are provisions and constants
+            self.__map = nx.get_node_attributes(self, 'provision')
+            self.__map.update(nx.get_node_attributes(self, 'constant'))
+            datacpy = dict(self.__map)
+        except Exception as e:
+            raise RuntimeError("""Failed to extract provisions from SHSA
+            model. {}""".format(e))
+        # make map bi-directional (reversed duplicate)
+        constants = nx.get_node_attributes(self, 'constant')
+        for var, itoms in datacpy.items():
+            # skip constants (only map provisions)
+            if var in constants:
+                continue
+            # map each provision to the variable
+            for itom in itoms:
+                self.__map[itom] = var
 
     def __init_with_nxgraph(self, properties):
         super(SHSAModel, self).__init__()
@@ -195,6 +215,12 @@ class SHSAModel(nx.DiGraph):
         """Sets the value of a property of a node."""
         self.node[node][prop] = value
 
+    @property
+    def variables(self):
+        """Returns all variables of the model."""
+        return [n for n in self.nodes() if self.property_value_of(n, 'type') ==
+                SHSANodeType.V]
+
     #
     # getters for SHSA properties
     #
@@ -225,6 +251,31 @@ class SHSAModel(nx.DiGraph):
     def unprovided(self, nodes):
         """Returns unprovided nodes."""
         return [n for n in nodes if self.provided([n]) is False]
+
+    #
+    # variables - itoms map
+    #
+
+    def variable(self, itom):
+        """Translates a given itom to a variable.
+
+        itoms -- a single itom's name
+
+        Returns the variable.
+
+        """
+        return self.__map[itom]
+
+    def itoms(self, variable):
+        """Returns a list of itoms or a constant corresponding to the given
+        variable.
+
+        """
+        return self.__map[variable]
+
+    #
+    # output formats
+    #
 
     def __str__(self):
         res = "Nodes\n"

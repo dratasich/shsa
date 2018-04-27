@@ -4,7 +4,7 @@ relations:
       in: [b, c, d]
       fct: "b + c + d"
   r2:
-    c:
+    b:
       in: [e]
       fct: "0.5 * e"
   r3:
@@ -22,14 +22,12 @@ properties:
   # type will be generated, however 'properties' and at least 1 key have to be
   # available
 
-  provided:
-    a: False
-    b: True
-    c: False
-    d: True
-    e: True
-    f: False
-    g: True
-    h: True
-    i: True
-    j: True
+  provision:
+    a: ["i_a"]
+    b: ["i_b"]
+    d: ["i_d"]
+    e: ["i_e"]
+    f: ["i_f"]
+
+  constant:
+    c: 0
