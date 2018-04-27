@@ -84,7 +84,7 @@ class SubstitutionTestCase(unittest.TestCase):
         self.assertEqual(result, 2, "execute gives wrong result")
         s = Substitution(['r3', 'r4'], model=m, root='a')
         result = s.execute({'g': 0, 'h': 1, 'i': 2, 'j': 3})
-        self.assertEqual(result, 36, "execute gives wrong result")
+        self.assertEqual(result, -3, "execute gives wrong result")
 
 
 class SubstitutionListTestCase(unittest.TestCase):

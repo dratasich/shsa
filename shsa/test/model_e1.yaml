@@ -10,7 +10,7 @@ relations:
   r3:
     a:
       in: [f]
-      fct: "f^2"
+      fct: "f/2"
   r4:
     f:
       in: [g, h, i, j]

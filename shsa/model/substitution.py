@@ -163,11 +163,50 @@ class Substitution(UserList):
             g.remove_nodes_from(nremove)
         return g, inputs
 
+    def __gen_code(self):
+        """Generates code and inputs for the given substitution.
+
+        Returns the input topics and the python code to execute. The transfer
+        node executes the code in the form of "y=f(x)". Whereas x is a vector
+        of values received as inputs, and y is the value of the output.
+
+        """
+        # dfs of substitution tree
+        t, vin = self.tree(collapse_variables=False)
+        n_ordered = nx.dfs_postorder_nodes(nx.Graph(t), self.__root)
+        # execute functions (start with sources)
+        code = "\n"
+        for n in n_ordered:
+            if self.__model.is_relation(n):
+                # I/O variables of relation
+                iv = ",".join(t.predecessors(n))  # input
+                ov = list(t.successors(n))[0]  # output
+                # define relation as function
+                code += "def " + n + "(" + iv + "):\n"
+                code += "    return (" \
+                        + self.__model.property_value_of(n, 'fct')[ov] \
+                        + ")\n\n"
+                # execute relation
+                code += ov + " = " + n + "(" + iv + ")\n\n"
+        # set output
+        code += "substitution_result = " + self.__root  # assign output
+        return vin, code
+
     def execute(self, inputs):
+        """Executes the substitution given the value per input variable.
+
+        inputs -- Dictionary of variable->value.
+
+        """
         output = None
         # code generate substitution tree (ROS shsa_node.py)
-        raise NotImplementedError
-        return output
+        vin, code = self.__gen_code()
+        if not set(vin).issubset(set(inputs.keys())):
+            raise RuntimeError("Missing inputs to execute the substitution.")
+        # execute the code
+        local_vars = inputs
+        exec(code, None, local_vars)
+        return local_vars['substitution_result']
 
     def write_dot(self, basefilename, oformat=None):
         """Saves the model as dot-file and generates an image if oformat given.
