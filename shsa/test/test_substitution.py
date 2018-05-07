@@ -92,6 +92,14 @@ class SubstitutionTestCase(unittest.TestCase):
         s = Substitution(['r3', 'r4'], model=m, root='a')
         result = s.execute({'g': 0, 'h': 1, 'i': 2, 'j': 3})
         self.assertEqual(result, -3, "execute gives wrong result")
+        # execute with utils
+        m = SHSAModel(configfile="test/model_e2.yaml")
+        s = Substitution(['r1'], model=m, root='a')
+        result = s.execute({'b': 1, 'c': m.itoms('c')})  # c is a constant
+        self.assertEqual(result, 1.5, "execute gives wrong result")
+        s = Substitution(['r2'], model=m, root='a')
+        result = s.execute({'d': 2})
+        self.assertEqual(result, 4, "execute gives wrong result")
 
     def test_eq(self):
         m = SHSAModel(configfile="test/model_e1.yaml")

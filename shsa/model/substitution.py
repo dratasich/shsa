@@ -8,6 +8,7 @@ install_aliases()
 from collections import UserList
 import networkx as nx
 from subprocess import call  # call dot to generate .png out of .dot files
+import textwrap
 
 from model.shsamodel import SHSANodeType
 from model.utility import *
@@ -193,8 +194,6 @@ class Substitution(UserList):
                         + ")\n\n"
                 # execute relation
                 code += ov + " = " + n + "(" + iv + ")\n\n"
-        # set output
-        code += "substitution_result = " + self.__root  # assign output
         return vin, code
 
     def execute(self, inputs):
@@ -203,15 +202,31 @@ class Substitution(UserList):
         inputs -- Dictionary of variable->value.
 
         """
-        output = None
+        # prepend utils to code (additional python files with functions
+        # that may be used in the relations)
+        u_code = ""
+        if self.__model.utils is not None:
+            u_code += "# utils\n\n"
+            for filename in self.__model.utils:
+                with open(filename) as f:
+                    u_code += f.read() + "\n"
         # code generate substitution tree (ROS shsa_node.py)
-        vin, code = self.__gen_code()
+        vin, s_code = self.__gen_code()
         if not set(vin).issubset(set(inputs.keys())):
             raise RuntimeError("Missing inputs to execute the substitution.")
-        # execute the code
+        # execute the code - put everything into a function such that we don't
+        # need global x to call in functions; util and substitution functions
+        # are local in the defined function "execute"
+        params = ",".join(vin)
+        code = "def execute(" + params + "):\n\n"
+        code += textwrap.indent(u_code, "    ")
+        code += "\n    # substitution\n"
+        code += textwrap.indent(s_code, "    ")
+        code += "\n    return " + self.__root  # assign output
+        code += "\n\n\nresult = execute(" + params + ")"
         local_vars = inputs
         exec(code, None, local_vars)
-        return local_vars['substitution_result']
+        return local_vars['result']
 
     def write_dot(self, basefilename, oformat=None):
         """Saves the model as dot-file and generates an image if oformat given.

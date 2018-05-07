@@ -95,6 +95,7 @@ class SHSAModel(nx.DiGraph):
         defining the structure of the graph and the nodes' properties.
 
         """
+        self.__utils = None
         with open(configfile, 'r') as f:
             try:
                 data = yaml.load(f)
@@ -108,6 +109,8 @@ class SHSAModel(nx.DiGraph):
             else:
                 raise RuntimeError("""Graph structure (graph or relations) is
                 missing in the config file '{}'.""".format(configfile))
+            if 'utils' in data.keys():
+                self.__utils = data['utils']
 
     def __init_with_edges(self, edges, properties):
         """Initializes the model with edges.
@@ -223,6 +226,10 @@ class SHSAModel(nx.DiGraph):
         """Returns all variables of the model."""
         return [n for n in self.nodes() if self.property_value_of(n, 'type') ==
                 SHSANodeType.V]
+
+    @property
+    def utils(self):
+        return self.__utils
 
     #
     # getters for SHSA properties
