@@ -61,6 +61,13 @@ class SHSAModelTestCase(unittest.TestCase):
         m.set_property_to('a', 'need', False)
         self.assertFalse(m.property_value_of('a', 'need'),
                          "wrong initialized property")
+        # the property 'provided' of constants cannot be set to false
+        m = SHSAModel(configfile="test/model_p6.yaml")
+        # provision is fine
+        m.set_property_to('a', 'provided', False)
+        # constant 'provided' status is not allowed to be set
+        with self.assertRaises(RuntimeError):
+            m.set_property_to('c', 'provided', False)
 
     def test_has_property(self):
         m = SHSAModel(self.__graph_dict, self.__properties)

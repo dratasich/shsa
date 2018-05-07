@@ -80,7 +80,7 @@ class SubstitutionTestCase(unittest.TestCase):
     def test_execute(self):
         m = SHSAModel(configfile="test/model_e1.yaml")
         s = Substitution(['r1', 'r2'], model=m, root='a')
-        result = s.execute({'b': 0, 'd': 1, 'e': 2})
+        result = s.execute({'c': 0, 'd': 1, 'e': 2})
         self.assertEqual(result, 2, "execute gives wrong result")
         s = Substitution(['r3', 'r4'], model=m, root='a')
         result = s.execute({'g': 0, 'h': 1, 'i': 2, 'j': 3})

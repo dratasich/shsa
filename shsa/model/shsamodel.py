@@ -213,6 +213,9 @@ class SHSAModel(nx.DiGraph):
 
     def set_property_to(self, node, prop, value):
         """Sets the value of a property of a node."""
+        if self.has_property(node, 'constant') and prop == 'provided':
+            raise RuntimeError("""The 'provided' status of constants is not
+            allowed to be changed.""")
         self.node[node][prop] = value
 
     @property
@@ -239,11 +242,18 @@ class SHSAModel(nx.DiGraph):
         for n in nodes:
             if self.property_value_of(n, 'type') == SHSANodeType.R:
                 raise RuntimeError("Relations have no property 'provided'.")
-            if self.has_property(n, 'provision'):
+            # an available 'provided' property overrides the availability test
+            if self.has_property(n, 'provided'):
+                if not self.property_value_of(n, 'provided'):
+                    return False
+            # when 'provided' is not given then the model is searched for the
+            # itoms (that are provisions and constants)
+            elif self.has_property(n, 'provision'):
                 if len(self.property_value_of(n, 'provision')) == 0:
                     return False
             elif self.has_property(n, 'constant'):
                 continue
+            # use default provided status
             elif not self.property_value_of(n, 'provided'):
                 return False
         return True
