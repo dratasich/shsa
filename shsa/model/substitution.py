@@ -77,6 +77,12 @@ class Substitution(UserList):
 
     utility = property(__get_utility)
 
+    @property
+    def input_variables(self):
+        """Returns the input variables needed to apply this substitutions."""
+        _, vin = self.tree(collapse_variables=True)
+        return vin
+
     def relations(self):
         """Returns set of relations involved in the substitution."""
         return frozenset(self)
@@ -117,8 +123,6 @@ class Substitution(UserList):
         - Maintain the tree with adding nodes.
 
         """
-        if len(self) == 0:
-            raise RuntimeWarning("Substitution is empty.")
         g = nx.DiGraph()
         inputs = []
         # bfs through relations
@@ -139,6 +143,7 @@ class Substitution(UserList):
                     adjacents = adjacents & set(self)
                     # save the input variables additionally
                     if len(adjacents) == 0:
+                        g.add_node(node)
                         inputs.append(node)
                 queue.extend(adjacents - visited)
                 for a in adjacents:

@@ -76,6 +76,13 @@ class SubstitutionTestCase(unittest.TestCase):
                          "wrong substitution tree (edge mismatch)")
         self.assertEqual(set(vin), {'g'},
                          "wrong variable source nodes")
+        # empty substitution (no relations)
+        s = Substitution([], model=SHSAModel(configfile="test/model_p6.yaml"),
+                         root='a')
+        t, vin = s.tree()
+        self.assertEqual(set(vin), {'a'})
+        self.assertEqual(set(t.nodes()), {'a'})
+        self.assertEqual(set(t.edges()), set([]))
 
     def test_execute(self):
         m = SHSAModel(configfile="test/model_e1.yaml")
