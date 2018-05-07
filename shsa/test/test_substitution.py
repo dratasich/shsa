@@ -93,6 +93,16 @@ class SubstitutionTestCase(unittest.TestCase):
         result = s.execute({'g': 0, 'h': 1, 'i': 2, 'j': 3})
         self.assertEqual(result, -3, "execute gives wrong result")
 
+    def test_eq(self):
+        m = SHSAModel(configfile="test/model_e1.yaml")
+        s1 = Substitution(['r1', 'r2'], model=m, root='a')
+        s2 = Substitution(['r1', 'r2'], model=m, root='a')
+        s3 = Substitution(['r1', 'r2'], model=m, root='b')
+        s4 = Substitution(['r3'], model=m, root='a')
+        self.assertEqual(s1, s2)
+        self.assertNotEqual(s1, s3)
+        self.assertNotEqual(s1, s4)
+
 
 class SubstitutionListTestCase(unittest.TestCase):
     """Test cases for substitution results."""

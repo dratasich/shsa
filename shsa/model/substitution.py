@@ -245,3 +245,11 @@ class Substitution(UserList):
         if len(self) > 0:
             u = self.utility
         return "U = " + str(u) + " | " + str(list(self))
+
+    def __eq__(self, other):
+        return (self.relations() == other.relations()) and \
+            (self.root == other.root) and \
+            (self.model == other.model)
+
+    def __hash__(self):
+        return hash((self.root, self.model, self.relations()))
