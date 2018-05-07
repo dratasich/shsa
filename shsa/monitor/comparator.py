@@ -27,6 +27,7 @@ class SimpleComparator(Comparator):
         with other values.
 
         """
+        assert type(values) == list, "Parameter 'values' must be a list."
         # mismatch per value
         mismatch = [0]*len(values)
         # compare values against each other
