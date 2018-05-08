@@ -1,0 +1,26 @@
+utils: ["test/model_e2.py"]
+
+
+relations:
+  r1:
+    a:
+      in: [b, c]
+      fct: "add(b, c)"
+  r2:
+    a:
+      in: [d]
+      fct: "mult_by_2(d)"
+
+
+properties:
+
+  # type will be generated, however 'properties' and at least 1 key have to be
+  # available
+
+  provision:
+    a: ["i_a"]
+    b: ["i_b"]
+    d: ["i_d"]
+
+  constant:
+    c: 0.5
