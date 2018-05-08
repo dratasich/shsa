@@ -148,6 +148,11 @@ class SHSAModel(nx.DiGraph):
             <output variable node>:
               in: <list of input variable nodes>
               fct: "<f(..)>"
+              constraint: "True"
+
+        Constraints are tested after the function is executed. When the
+        constraint is satisfied, the output is released/returned. Constraints
+        are optional.
 
         """
         edges = []
@@ -175,11 +180,18 @@ class SHSAModel(nx.DiGraph):
         if 'fct' not in properties.keys():
             # set the 'fct' attribute of relation nodes w.r.t. output
             properties['fct'] = {}
+            properties['constraint'] = {}
             for r in relations:
                 functions = {}  # collects functions of this relation
+                constraints = {}  # collects constraints of this relation
                 for o in relations[r]:
                     functions[o] = relations[r][o]['fct']
+                    if 'constraint' not in relations[r][o].keys():
+                        constraints[o] = "True"  # default: satisfied
+                    else:
+                        constraints[o] = relations[r][o]['constraint']
                 properties['fct'][r] = functions
+                properties['constraint'][r] = constraints
         self.__init_with_edges(edges, properties)
 
     def has_property(self, node, prop):

@@ -100,6 +100,16 @@ class SubstitutionTestCase(unittest.TestCase):
         s = Substitution(['r2'], model=m, root='a')
         result = s.execute({'d': 2})
         self.assertEqual(result, 4, "execute gives wrong result")
+        # execute with constraints
+        m = SHSAModel(configfile="test/model_e3.yaml")
+        s = Substitution(['r1'], model=m, root='a')
+        result = s.execute({'b': -1, 'c': m.itoms('c')})  # c is a constant
+        self.assertEqual(result, None, "constraint b > 0 ignored")
+        result = s.execute({'b': 1, 'c': m.itoms('c')})
+        self.assertEqual(result, 1.5, "wrong result")
+        s = Substitution(['r2'], model=m, root='a')
+        result = s.execute({'d': 2})
+        self.assertEqual(result, None, "constraint False ignored")
 
     def test_eq(self):
         m = SHSAModel(configfile="test/model_e1.yaml")

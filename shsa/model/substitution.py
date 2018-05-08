@@ -194,6 +194,11 @@ class Substitution(UserList):
                         + ")\n\n"
                 # execute relation
                 code += ov + " = " + n + "(" + iv + ")\n\n"
+                # check constraint (abort if violated)
+                code += "if not (" \
+                        + self.__model.property_value_of(n, 'constraint')[ov] \
+                        + "):\n"
+                code += "    return None\n\n"
         return vin, code
 
     def execute(self, inputs):
@@ -214,9 +219,9 @@ class Substitution(UserList):
         vin, s_code = self.__gen_code()
         if not set(vin).issubset(set(inputs.keys())):
             raise RuntimeError("Missing inputs to execute the substitution.")
-        # execute the code - put everything into a function such that we don't
-        # need global x to call in functions; util and substitution functions
-        # are local in the defined function "execute"
+        # execute the code - enclose everything with a function such that all
+        # util and substitution functions are local in the defined function
+        # `execute` (otherwise we would have to call `global fct`)
         params = ",".join(vin)
         code = "def execute(" + params + "):\n\n"
         code += textwrap.indent(u_code, "    ")
