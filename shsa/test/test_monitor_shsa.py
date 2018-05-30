@@ -29,6 +29,7 @@ class SHSAMonitorTestCase(unittest.TestCase):
                          "itoms initialization failed")
 
     def test_monitor(self):
+        """Test 1-fault-tolerance."""
         m = SHSAMonitor(model=self.__model, domain=self.__domain)
         itoms = {'i_a': 0, 'i_d': 0, 'i_e': 0, 'i_f': 0}
         exp_status = {itom: ItomFaultStatusType.OK for itom in itoms}
@@ -37,6 +38,30 @@ class SHSAMonitorTestCase(unittest.TestCase):
         itoms = {'i_a': 0, 'i_d': 0, 'i_e': 0, 'i_f': 1}
         exp_status = {itom: ItomFaultStatusType.OK for itom in itoms}
         exp_status['i_f'] = ItomFaultStatusType.FAULTY
+        ret_status = m.monitor(itoms)
+        self.assertEqual(ret_status, exp_status, "wrong fault status")
+        # only 2 relations (to view to judge which itom is faulty)
+        itoms = {'i_a': 0, 'i_f': 3}
+        exp_status = {itom: ItomFaultStatusType.UNDEFINED for itom in itoms}
+        ret_status = m.monitor(itoms)
+        self.assertEqual(ret_status, exp_status, "wrong fault status")
+        # test another model (with utils)
+        self.__model = SHSAModel(configfile="test/model_e2.yaml")
+        m = SHSAMonitor(model=self.__model, domain='a')
+        itoms = {'i_a': 4.03, 'i_b': 3.48, 'i_d': 2.0}
+        exp_status = {itom: ItomFaultStatusType.OK for itom in itoms}
+        ret_status = m.monitor(itoms)
+        self.assertEqual(ret_status, exp_status, "wrong fault status")
+        itoms = {'i_a': 4.5, 'i_b': 3.48, 'i_d': 2.0}
+        exp_status = {itom: ItomFaultStatusType.OK for itom in itoms}
+        exp_status['i_a'] = ItomFaultStatusType.FAULTY
+        ret_status = m.monitor(itoms)
+        self.assertEqual(ret_status, exp_status, "wrong fault status")
+        # test models with constraints
+        self.__model = SHSAModel(configfile="test/model_e3.yaml")
+        m = SHSAMonitor(model=self.__model, domain='a')
+        itoms = {'i_a': 4.5, 'i_b': 3.48, 'i_d': 4.0}
+        exp_status = {itom: ItomFaultStatusType.UNDEFINED for itom in itoms}
         ret_status = m.monitor(itoms)
         self.assertEqual(ret_status, exp_status, "wrong fault status")
 

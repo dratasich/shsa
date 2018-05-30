@@ -18,7 +18,7 @@ from monitor.fault import ItomFaultStatusType
 from model.shsamodel import SHSAModel
 from engine.dfs import DepthFirstSearch
 from model.substitution import Substitution
-from monitor.comparator import SimpleComparator
+from monitor.fault import FaultAgreement
 
 
 class SHSAMonitor(Monitor):
@@ -145,16 +145,14 @@ class SHSAMonitor(Monitor):
                     variable {}.""".format(v))
             # bring to common domain
             out[s] = s.execute(inputs)
-        # compare
-        c = SimpleComparator()
-        mismatches = c.compare(list(out.values()), error=0.1)
-        # map faulty substitution outputs to inputs (note that it is unclear
-        # which of the inputs caused the fault -> all are marked faulty!)
-        status = {i: ItomFaultStatusType.OK for i in itoms}
-        outliers = 0
+        # agree about the fault status of the output values
+        a = FaultAgreement()
+        vstatus = a.agree(list(out.values()), error=0.1)
+        # map value status to itom status
+        # note that it is unclear which of the inputs caused the fault -> all
+        # are marked faulty!
+        istatus = {i: ItomFaultStatusType.OK for i in itoms}
         for i, s in enumerate(self.__substitutions):
-            if mismatches[i] > 1:
-                outliers = outliers + 1
-                for itom in input_itoms[s]:
-                    status[itom] = ItomFaultStatusType.FAULTY
-        return status
+            for itom in input_itoms[s]:
+                istatus[itom] = vstatus[i]
+        return istatus
