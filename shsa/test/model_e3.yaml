@@ -5,9 +5,9 @@ utils:
 relations:
   r1:
     a:
-      in: [b, c]
+      in: [b, c, e]
       fct: "add(b, c)"
-      constraint: "b > 0"
+      constraint: "e*b > 0"
   r2:
     a:
       in: [d]
@@ -24,3 +24,4 @@ properties:
 
   constant:
     c: 0.5
+    e: 1.0
