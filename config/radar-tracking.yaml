@@ -1,4 +1,4 @@
-# SHSA model for sensor ID = 7
+# SHSA model for radar sensor tracks
 
 
 # Additional Python modules can be specified via utils. The given files are
@@ -24,15 +24,17 @@ relations:
       in: [y_global]
       fct: "y_global"
 
-  # TODO: the monitor additionally saves the last observation of each track (of
-  # a neighbor or the sensor itself) and forward estimate the position
+  # the monitor additionally saves the last observation of each track (of a
+  # neighbor or the sensor itself) and forward estimate the position
   r36:
     x:
-      in: [x_pred]
-      fct: "x"
+      in: [x_old, vx_old, t_old, t, y_old, vy_old, location_x, location_y, sensor_heading, range, angle]
+      fct: "x_old + vx_old*(t-t_old)"
+      constraint: "in_field_of_view([x, y_old + vy_old*(t-t_old)], [location_x, location_y], sensor_heading, range, angle)"
     y:
-      in: [y_pred]
-      fct: "y"
+      in: [y_old, vy_old, t_old, t, x_old, vx_old, location_x, location_y, sensor_heading, range, angle]
+      fct: "y_old + vy_old*(t-t_old)"
+      constraint: "in_field_of_view([x_old + vx_old*(t-t_old), y], [location_x, location_y], sensor_heading, range, angle)"
 
   # considering [x,y] and [x_nbr, y_nbr] belong to the same vehicle, then
   # assign the track of the neighboring sensor if its in the field of view of
@@ -57,10 +59,16 @@ properties:
   # understands only each variable under a separate topic.
 
   provision:
+    t: ["t"]
     x: ["x"]
     y: ["y"]
     x_nbr: ["x_nbr"]
     y_nbr: ["y_nbr"]
+    t_old: ["t_old"]
+    x_old: ["x_old"]
+    y_old: ["y_old"]
+    vx_old: ["vx_old"]
+    vy_old: ["vy_old"]
 
   # retrieved from sensor list
   constant:

@@ -83,7 +83,10 @@ def find_match(track, possible_tracks, max_off=6):
     return track_match
 
 def update_id_pairs(s1, s2, track_id_pairs):
-    """Appends unmatched tracks in s1 to track_id_pairs."""
+    """Appends unmatched tracks in s1 to track_id_pairs.
+
+    TODO: find additional id pairs with forward estimation
+    """
     matched_ids = [pair[0] for pair in track_id_pairs]
     for tid1, t1 in s1.items():
         # try to find a near track for all unmatched tracks
@@ -115,18 +118,32 @@ def pair(s1, s2, track_id_pairs):
             pass
     return pairs
 
-def check_pair(track_a, track_b):
-    x = header.index('x')
-    y = header.index('y')
-    itoms = {
-        'x': track_a[x],
-        'y': track_a[y],
-        'x_nbr': track_b[x],
-        'y_nbr': track_b[y],
-    }
+def check_itoms(under_test, neighbor, predecessor_last):
+    # indices of relevant fields in the track
+    x, y = header.index('x'), header.index('y')
+    vx, vy = header.index('v_x'), header.index('v_y')
+    t = header.index('time')
+    # fill itoms as available
+    itoms = {'x': under_test[x], 'y': under_test[y]}
+    if neighbor is not None:
+        itoms.update({
+            'x_nbr': neighbor[x],
+            'y_nbr': neighbor[y],
+        })
+    if predecessor_last is not None:
+        itoms.update({
+            't': under_test[t],
+            't_old': predecessor_last[t],
+            'x_old': predecessor_last[x],
+            'y_old': predecessor_last[y],
+            'vx_old': predecessor_last[vx],
+            'vy_old': predecessor_last[vy],
+            'vx_old': predecessor_last[vx],
+            'vy_old': predecessor_last[vy],
+        })
     status_x = x_monitor.monitor(itoms)
     status_y = y_monitor.monitor(itoms)
-    status = {itom: max(status_x[itom], status_y[itom]) for itom in status_x.keys()}
+    status = {itom: max(status_x[itom], status_y[itom]) for itom in itoms}
     return status
 
 # assume track ids are unique throughout the run (ids are not re-used when out
@@ -142,7 +159,8 @@ def check(sensors, sensors_last):
     status = None
     # make the monitoring concrete here
     try:
-        s6 = sensors[6]
+        s6_last = sensors_last[6]
+        s6 = sensors[6]  # all contained in s6_last, only used to update pairs
         s7 = sensors[7]
         s8 = sensors[8]
     except:
@@ -153,16 +171,20 @@ def check(sensors, sensors_last):
     global track_id_pairs_s8
     track_id_pairs_s6 = update_id_pairs(s7, s6, track_id_pairs_s6)
     track_id_pairs_s8 = update_id_pairs(s7, s8, track_id_pairs_s8)
-    track_pairs_6 = pair(s7, s6, track_id_pairs_s6)
+    track_pairs_6old = pair(s7, s6_last, track_id_pairs_s6)
+    #track_pairs_6 = pair(s7, s6, track_id_pairs_s6)
     track_pairs_8 = pair(s7, s8, track_id_pairs_s8)
     # check s7 against the neighbors
-    if not track_pairs_6 and not track_pairs_8:
+    if not track_pairs_6old and not track_pairs_8:
         print("no track pairs")
         return
-    for track_under_test, track_redundant in track_pairs_6:
-        status = check_pair(track_under_test, track_redundant)
-    for track_under_test, track_redundant in track_pairs_8:
-        status = check_pair(track_under_test, track_redundant)
+    # TODO: sum up status
+    for track_under_test, track_neighbor in track_pairs_8:
+        status = check_itoms(track_under_test, track_neighbor, None)
+    # for track_under_test, track_neighbor in track_pairs_6:
+    #     status = check_itoms(track_under_test, track_neighbor)
+    for track_under_test, track_predicted in track_pairs_6old:
+        status = check_itoms(track_under_test, None, track_predicted)
     print(status)
 
 
