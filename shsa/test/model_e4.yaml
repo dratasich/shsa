@@ -1,0 +1,24 @@
+relations:
+
+  r1:
+    a:
+      in: [b, c]
+      fct: "b + c"
+      constraint: "a > 0"
+
+  r2:
+    a:
+      in: [d, c]
+      fct: "2*d"
+      constraint: "c < 0"
+
+
+properties:
+
+  provision:
+    a: ["i_a"]
+    b: ["i_b"]
+    d: ["i_d"]
+
+  constant:
+    c: 0.5

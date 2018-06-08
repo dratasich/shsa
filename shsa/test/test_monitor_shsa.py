@@ -64,6 +64,18 @@ class SHSAMonitorTestCase(unittest.TestCase):
         exp_status = {itom: ItomFaultStatusType.UNDEFINED for itom in itoms}
         ret_status = m.monitor(itoms)
         self.assertEqual(ret_status, exp_status, "wrong fault status")
+        self.__model = SHSAModel(configfile="test/model_e4.yaml")
+        m = SHSAMonitor(model=self.__model, domain='a')
+        itoms = {'i_a': 4.0, 'i_b': 3.48, 'i_d': 4.0}
+        exp_status = {itom: ItomFaultStatusType.OK for itom in itoms}
+        exp_status['i_d'] = ItomFaultStatusType.UNDEFINED
+        ret_status = m.monitor(itoms)
+        self.assertEqual(ret_status, exp_status, "wrong fault status")
+        itoms = {'i_a': -4.0, 'i_b': -3.48, 'i_d': -4.0}
+        exp_status = {itom: ItomFaultStatusType.UNDEFINED for itom in itoms}
+        exp_status['i_a'] = ItomFaultStatusType.OK
+        ret_status = m.monitor(itoms)
+        self.assertEqual(ret_status, exp_status, "wrong fault status")
 
 
 if __name__ == '__main__':

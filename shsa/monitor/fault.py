@@ -29,11 +29,17 @@ class ItomFaultStatusType(IntEnum):
 class FaultAgreement(object):
     """Agrees about the fault status of a given list of values that should
     match.
-
     """
 
     def agree(self, values, error=1.0):
-        """Annotate the values with a fault status."""
+        """Annotate the values with a fault status.
+
+        values -- The values that should match.
+        error -- Maximal allowed deviation of the values.
+
+        If a value is None, its status will be set to UNDEFINED.
+
+        """
         assert type(values) == list, "Parameter 'values' must be a list."
         # compare
         c = SimpleComparator()

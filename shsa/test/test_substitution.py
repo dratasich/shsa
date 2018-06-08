@@ -104,12 +104,22 @@ class SubstitutionTestCase(unittest.TestCase):
         m = SHSAModel(configfile="test/model_e3.yaml")
         s = Substitution(['r1'], model=m, root='a')
         result = s.execute({'b': -1, 'c': m.itoms('c'), 'e': m.itoms('e')})
-        self.assertEqual(result, None, "constraint b > 0 ignored")
+        self.assertEqual(result, None, "constraint e*b > 0 ignored")
         result = s.execute({'b': 1, 'c': m.itoms('c'), 'e': m.itoms('e')})
         self.assertEqual(result, 1.5, "wrong result")
         s = Substitution(['r2'], model=m, root='a')
         result = s.execute({'d': 2})
         self.assertEqual(result, None, "constraint False ignored")
+        # execute with output variable / constant in constraint
+        m = SHSAModel(configfile="test/model_e4.yaml")
+        s = Substitution(['r1'], model=m, root='a')
+        result = s.execute({'b': -1, 'c': m.itoms('c')})
+        self.assertEqual(result, None, "constraint a > 0 ignored")
+        result = s.execute({'b': 1, 'c': m.itoms('c')})
+        self.assertEqual(result, 1.5, "wrong result")
+        s = Substitution(['r2'], model=m, root='a')
+        result = s.execute({'d': 2, 'c': m.itoms('c')})
+        self.assertEqual(result, None, "constraint c > 0 ignored")
 
     def test_eq(self):
         m = SHSAModel(configfile="test/model_e1.yaml")
