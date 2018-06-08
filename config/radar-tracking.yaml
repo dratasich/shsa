@@ -1,27 +1,51 @@
+# SHSA model for sensor ID = 7
+
+
+# Additional Python modules can be specified via utils. The given files are
+# imported/loaded via `exec(open(fn).read())`, when a relation or substitution
+# is executed.
+
+utils:
+  - "../config/radar-tracking.py"
+
+
+# We add constraints to the relations. The function of the relations are only
+# executed when the constraint evaluates to True.
+
 relations:
-  r12:
-    s:
-      in: [m, p]
-      fct: "f1"
-    m:
-      in: [s, p]
-      fct: "f2"
-  r3:
-    s:
-      in: [n, t]
-      fct: "f3"
+
+  # TODO: in case we have some global vehicle tracker that fuses the tracks of
+  # the sensor, we can check this output too
   r4:
-    s:
-      in: [t, p]
-      fct: "f4"
-  r6:
-    s:
-      in: [s, t]
-      fct: "f6"
+    x:
+      in: [x_global]
+      fct: "x_global"
+    y:
+      in: [y_global]
+      fct: "y_global"
+
+  # TODO: the monitor additionally saves the last observation of each track (of
+  # a neighbor or the sensor itself) and forward estimate the position
+  r36:
+    x:
+      in: [x_pred]
+      fct: "x"
+    y:
+      in: [y_pred]
+      fct: "y"
+
+  # considering [x,y] and [x_nbr, y_nbr] belong to the same vehicle, then
+  # assign the track of the neighboring sensor if its in the field of view of
+  # the sensor
   r7:
-    s:
-      in: [n]
-      fct: "f7"
+    x:
+      in: [x_nbr, y_nbr, location_x, location_y, sensor_heading, range, angle]
+      fct: "x_nbr"
+      constraint: "in_field_of_view([x_nbr, y_nbr], [location_x, location_y], sensor_heading, range, angle)"
+    y:
+      in: [x_nbr, y_nbr, location_x, location_y, sensor_heading, range, angle]
+      fct: "y_nbr"
+      constraint: "in_field_of_view([x_nbr, y_nbr], [location_x, location_y], sensor_heading, range, angle)"
 
 
 properties:
@@ -29,11 +53,24 @@ properties:
   # type will be generated, however this dictionary 'properties' and at least 1
   # key/element (here: 'provision') has to be available
 
-  provision:
-    m: ["i_m"]
-    s: ["i_s"]
-    t: ["i_t"]
-    n: ["i_n"]
+  # x,y can be published in one topic, however, in the current (csv-)monitor
+  # understands only each variable under a separate topic.
 
+  provision:
+    x: ["x"]
+    y: ["y"]
+    x_nbr: ["x_nbr"]
+    y_nbr: ["y_nbr"]
+
+  # retrieved from sensor list
   constant:
-    p: ["i_p"]  # pose of the sensor
+    location_x_minus1: 216.15
+    location_y_minus1: -125
+    location_x: 259.81
+    location_y: -150
+    location_x_plus1: 303.11
+    location_y_plus1: -175
+    range: 50  # max range of a sensor (m)
+    angle: 1.047197567  # field of view of a sensor (rad)
+    sensor_heading: 0  # heading of a sensor, center of fov in x-axis (rad)
+    vehicle_heading: -0.523598783  # heading of a vehicles (rad)
