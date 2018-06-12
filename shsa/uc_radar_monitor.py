@@ -3,7 +3,7 @@
 
 import argparse
 import numpy as np
-import itertools
+import csv
 
 from monitor.shsamonitor import SHSAMonitor
 from monitor.fault import ItomFaultStatusType
@@ -46,6 +46,24 @@ data = np.genfromtxt(args.csv, delimiter=',', comments='%', names=True)
 header = data.dtype.names
 print("{} columns with names {}".format(len(data[0]), data.dtype.names))
 print("first row: {}".format(data[0]))
+
+
+#
+# Log
+#
+
+f = open('pairs.csv', 'w', newline='')
+pairs_writer = csv.writer(f)
+pairs_writer.writerow(["#time",
+                       "from_sensor", "from_track",
+                       "to_sensor", "to_track"])
+
+def log_pairs(t, sensors, pairs):
+    s1, s2 = sensors
+    for pair in pairs:
+        row = [t, int(s1), int(pair[0]), int(s2), int(pair[1])]
+        pairs_writer.writerow(row)
+
 
 
 #
@@ -151,7 +169,7 @@ def check_itoms(under_test, neighbor, predecessor_last):
 track_id_pairs_s6 = []  # pairs s7 <--> s6
 track_id_pairs_s8 = []  # pairs s7 <--> s8
 
-def check(sensors, sensors_last):
+def check(t, sensors, sensors_last):
     """Check itoms in sensor 7 domain."""
     if sensors is None:
         return None
@@ -174,6 +192,8 @@ def check(sensors, sensors_last):
     track_pairs_6old = pair(s7, s6_last, track_id_pairs_s6)
     #track_pairs_6 = pair(s7, s6, track_id_pairs_s6)
     track_pairs_8 = pair(s7, s8, track_id_pairs_s8)
+    log_pairs(t, [7, 6], track_id_pairs_s6)
+    log_pairs(t, [7, 8], track_id_pairs_s8)
     # check s7 against the neighbors
     if not track_pairs_6old and not track_pairs_8:
         print("no track pairs")
@@ -200,11 +220,10 @@ status = None
 for row in data:
     # gather itoms as long as its the same timestamp
     if row['time'] != t:
-        # new timestamp
-        t = row['time']
         # check the itoms gathered during the last period
-        check(sensors, sensors_last)
-        # reset current observations per sensor
+        check(t, sensors, sensors_last)
+        # reset
+        t = row['time']
         sensors = {}
     # create a list of tracks for each sensor
     sid = row['sensor']
