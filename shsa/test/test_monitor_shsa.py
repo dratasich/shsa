@@ -1,4 +1,5 @@
 import unittest
+import yaml
 
 from monitor.shsamonitor import SHSAMonitor
 from monitor.fault import ItomFaultStatusType
@@ -76,6 +77,34 @@ class SHSAMonitorTestCase(unittest.TestCase):
         exp_status['i_a'] = ItomFaultStatusType.OK
         ret_status = m.monitor(itoms)
         self.assertEqual(ret_status, exp_status, "wrong fault status")
+
+    def test_logfile(self):
+        logfile = "monitor-log.yaml"
+        # clean file
+        with open(logfile, 'w') as f:
+            pass
+        model = SHSAModel(configfile="test/model_e1.yaml")
+        m = SHSAMonitor(model, domain='a', logfile=logfile)
+        self.assertEqual(m.logfile, logfile, "logfile not initialized")
+        itoms = {'i_a': 0, 'i_f': 3}
+        m.monitor(itoms)
+        # one yaml dump expected
+        # itoms, status and substitutions shall be part of the dump
+        with open(logfile, 'r') as f:
+            data = yaml.load(f)
+            self.assertEqual(data['itoms']['i_a'], itoms['i_a'], "wrong log")
+            self.assertEqual(data['status']['i_a'],
+                             ItomFaultStatusType.UNDEFINED, "wrong log")
+        # try more dumps
+        itoms = {'i_a': 0, 'i_d': 0, 'i_e': 0, 'i_f': 0}
+        m.monitor(itoms)
+        itoms = {'i_a': 0, 'i_d': 0, 'i_e': 0, 'i_f': 1}
+        m.monitor(itoms)
+        cnt = 0
+        with open(logfile, 'r') as f:
+            for data in yaml.load_all(f):
+                cnt = cnt + 1
+        self.assertEqual(cnt, 3, "wrong number of yaml dumps")
 
 
 if __name__ == '__main__':

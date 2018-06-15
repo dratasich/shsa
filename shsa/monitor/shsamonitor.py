@@ -12,6 +12,7 @@ domain. Relations probably have to be concatenated -> to substitutions.
 
 import networkx as nx
 from collections import OrderedDict
+import yaml
 
 from monitor.monitor import Monitor
 from monitor.fault import ItomFaultStatusType
@@ -27,7 +28,7 @@ class SHSAMonitor(Monitor):
 
     """
 
-    def __init__(self, model, domain, itoms=None):
+    def __init__(self, model, domain, itoms=None, logfile=None):
         """Initialize the monitor.
 
         model -- SHSA knowledge base collecting the relations between
@@ -35,6 +36,7 @@ class SHSAMonitor(Monitor):
         domain -- Common domain (a variable in the knowledge base) where the
             itoms will be compared to each other.
         itoms -- List of itoms (name only) which are inputs to monitor.
+        logfile -- Path to a file where the monitor writes its logs to (yaml).
         """
         self.__model = model
         """SHSA knowledge base."""
@@ -42,6 +44,11 @@ class SHSAMonitor(Monitor):
         """Variable domain where the itoms shall be compared."""
         self.__itoms = itoms
         """List of itom (names) that will be monitored."""
+        self.__logfile = logfile
+        """Path to the log file."""
+        self.__log_cnt = 0
+        """Counter for the monitor calls (more than one line is written during
+        a call, depends on the number of itoms)."""
         self.__substitutions = None
         """Substitutions used to bring the itoms into the common domain."""
         if itoms is not None:
@@ -70,6 +77,10 @@ class SHSAMonitor(Monitor):
         self.__itoms = itoms
         # update used substitutions
         self.__substitutions = self.__collect_substitutions(itoms)
+
+    @property
+    def logfile(self):
+        return self.__logfile
 
     def __collect_substitutions(self, itoms):
         """Map itom to variable and find relations from variables to domain.
@@ -107,6 +118,28 @@ class SHSAMonitor(Monitor):
             s = Substitution(root=self.__domain, model=self.__model)
             substitutions.append(s)
         self.__substitutions = substitutions
+
+    def __log(self, itoms, status, out):
+        """Log data from the monitor to a yaml file.
+
+        Each monitor call will be appended as a yaml document to the logfile.
+        https://pyyaml.org/wiki/PyYAMLDocumentation
+
+        """
+        with open(self.__logfile, 'a') as f:
+            # signal new monitor call (start next yaml document)
+            if self.__log_cnt > 0:
+                f.write("---\n")
+            # avoid shsa specific classes (use python built-ins only)
+            subs = {'relations': [list(s.relations())
+                                  for s in self.__substitutions],
+                    'input_variables': [s.input_variables
+                                        for s in self.__substitutions]}
+            stat = {key: int(value) for key, value in status.items()}
+            data = {'itoms': itoms, 'status': stat,
+                    'out': list(out.values()), 'substitutions': subs}
+            yaml.dump(data, f)
+            self.__log_cnt = self.__log_cnt + 1
 
     def monitor(self, itoms):
         """Analyze the given data for faults.
@@ -155,4 +188,7 @@ class SHSAMonitor(Monitor):
         for i, s in enumerate(self.__substitutions):
             for itom in input_itoms[s]:
                 istatus[itom] = vstatus[i]
+        # log if desired
+        if self.__logfile is not None:
+            self.__log(itoms, istatus, out)
         return istatus
