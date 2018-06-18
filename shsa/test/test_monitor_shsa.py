@@ -80,31 +80,57 @@ class SHSAMonitorTestCase(unittest.TestCase):
 
     def test_logfile(self):
         logfile = "monitor-log.yaml"
-        # clean file
-        with open(logfile, 'w') as f:
-            pass
         model = SHSAModel(configfile="test/model_e1.yaml")
         m = SHSAMonitor(model, domain='a', logfile=logfile)
-        self.assertEqual(m.logfile, logfile, "logfile not initialized")
-        itoms = {'i_a': 0, 'i_f': 3}
-        m.monitor(itoms)
+        with m:
+            self.assertEqual(m.logfile, logfile, "logfile not initialized")
+            itoms = {'i_a': 0, 'i_f': 3}
+            m.monitor(itoms)
         # one yaml dump expected
         # itoms, status and substitutions shall be part of the dump
         with open(logfile, 'r') as f:
             data = yaml.load(f)
+            t = data['time']
+            self.assertEqual(t, 0, "wrong log")
+            self.assertEqual(len(data['monitor_calls']), 1, "wrong log")
+            data = data['monitor_calls'][0]
             self.assertEqual(data['itoms']['i_a'], itoms['i_a'], "wrong log")
-            self.assertEqual(data['status']['i_a'],
+            self.assertEqual(data['istatus']['i_a'],
                              ItomFaultStatusType.UNDEFINED, "wrong log")
         # try more dumps
-        itoms = {'i_a': 0, 'i_d': 0, 'i_e': 0, 'i_f': 0}
-        m.monitor(itoms)
-        itoms = {'i_a': 0, 'i_d': 0, 'i_e': 0, 'i_f': 1}
-        m.monitor(itoms)
+        # note, new context resets logfile!
+        with m:
+            itoms = {'i_a': 0, 'i_d': 0, 'i_e': 0, 'i_f': 0}
+            m.monitor(itoms)
+            itoms = {'i_a': 0, 'i_d': 0, 'i_e': 0, 'i_f': 1}
+            m.monitor(itoms)
         cnt = 0
         with open(logfile, 'r') as f:
             for data in yaml.load_all(f):
                 cnt = cnt + 1
-        self.assertEqual(cnt, 3, "wrong number of yaml dumps")
+        self.assertEqual(cnt, 2, "wrong number of yaml dumps")
+        # try time stamped dumps (new logfile)
+        with SHSAMonitor(model, domain='a', logfile=logfile) as m:
+            itoms = {'t': 0.1, 'i_a': 0, 'i_f': 3}
+            m.monitor(itoms)
+            itoms = {'time': 0.2, 'i_a': 0, 'i_f': 0}
+            m.monitor(itoms)
+            itoms = {'time': 0.2, 'i_a': 0, 'i_f': 1}
+            m.monitor(itoms)
+        cnt = 0
+        with open(logfile, 'r') as f:
+            for data in yaml.load_all(f):
+                if cnt == 0:
+                    self.assertAlmostEqual(data['time'], 0.1, msg="wrong log")
+                    self.assertEqual(len(data['monitor_calls']), 1,
+                                     "wrong log")
+                elif cnt == 1:
+                    self.assertAlmostEqual(data['time'], 0.2, msg="wrong log")
+                    self.assertEqual(len(data['monitor_calls']), 2,
+                                     "wrong log")
+                cnt = cnt + 1
+            self.assertEqual(cnt, 2,
+                             "wrong number of yaml dumps (2 timesteps)")
 
 
 if __name__ == '__main__':

@@ -154,6 +154,8 @@ class SHSAModel(nx.DiGraph):
         constraint is satisfied, the output is released/returned. Constraints
         are optional.
 
+        Note, only variables in relations are added to the graph!
+
         """
         edges = []
         for r in relations:

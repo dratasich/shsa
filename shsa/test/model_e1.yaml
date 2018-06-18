@@ -15,7 +15,13 @@ relations:
     f:
       in: [g, h, i, j]
       fct: "g * h - i * j"
-
+  r5:
+    t:
+      in: [time]
+      fct: "time"
+    time:
+      in: [t]
+      fct: "t"
 
 properties:
 
@@ -28,6 +34,9 @@ properties:
     d: ["i_d"]
     e: ["i_e"]
     f: ["i_f"]
+    # time variable / clock provision examples
+    t: ["t"]
+    time: ["time"]
 
   constant:
     c: 0
