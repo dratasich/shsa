@@ -6,7 +6,7 @@ Visualize:
   with covariance (a color per sensor).
 * Track pairs, related measurements of two different sensors - line between
   track dots.
-* Prediction of tracks - light dots with covariance.
+* Monitor logs (compared itoms in the common domain).
 
 """
 
@@ -15,6 +15,8 @@ import argparse
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.widgets import Slider, Button, RadioButtons
+import yaml
+import math
 
 
 # parse optional config file
@@ -24,6 +26,8 @@ parser.add_argument('sensors', type=str,
                     help="CSV file of sensor locations.")
 parser.add_argument('tracks', type=str,
                     help="CSV file of tracks.")
+parser.add_argument('-l', '--monitor-logs', type=str, nargs=2, metavar=("X",
+                    "Y"), help="Logfiles (yaml) of monitors.")
 parser.add_argument('-p', '--pairs', type=str,
                     help="""Draw a line between paired tracks given the output
                     (CSV of pairs) of the monitor.""")
@@ -122,6 +126,53 @@ if args.pairs:
     pairs = collect_pairs(time, data)
     print("pairs for first timestamp: {}".format(pairs[0]))
 
+# Note that a monitor log may not include all timestamps!
+def parse_monitor_log(filename):
+    monitor = {}
+    with open(filename, 'r') as f:
+        for data in yaml.load_all(f):
+            monitor[round(data['time'],3)] = data['monitor_calls']
+            print(".", end="", flush="True")
+    print("")
+    return monitor
+
+if args.monitor_logs:
+    print("\nMonitor-Log")
+    print("-----------")
+    monitor_x = parse_monitor_log(args.monitor_logs[0])
+    monitor_y = parse_monitor_log(args.monitor_logs[1])
+    assert len(monitor_x) == len(monitor_y), "monitor x/y logs mismatch"
+    print("rows/timesteps: {}".format(len(monitor_x)))
+    print("first row: {}".format(monitor_x[list(monitor_x.keys())[0]]))
+
+
+#
+# Helpers
+#
+
+def translate(point, translation):
+    """Translates a 2D point."""
+    px, py = point
+    tx, ty = translation
+    return [px + tx, py + ty]
+
+def rotate(origin, point, angle):
+    """Rotate a 2D point counterclockwise around the given origin.
+
+    origin -- 2D vector, origin of the rotation.
+    point -- 2D vector, point to rotate.
+    angle -- Angle in radians.
+
+    https://stackoverflow.com/questions/34372480/rotate-point-about-another-point-in-degrees-python?utm_medium=organic&utm_source=google_rich_qa&utm_campaign=google_rich_qa
+
+    """
+    import math
+    ox, oy = origin
+    px, py = point
+    qx = ox + math.cos(angle) * (px - ox) - math.sin(angle) * (py - oy)
+    qy = oy + math.sin(angle) * (px - ox) + math.cos(angle) * (py - oy)
+    return [qx, qy]
+
 
 #
 # Plot
@@ -137,6 +188,8 @@ print("====")
 fig, ax = plt.subplots()
 plt.subplots_adjust(left=0.25, bottom=0.25)
 plt.axis([200, 370, -220, -100])
+plt.xlabel('x')
+plt.ylabel('y')
 
 ti = 0
 tstep = time[1] - time[0]  # assume equidistant time steps!
@@ -147,16 +200,34 @@ def time_to_index(t):
     return ti
 
 # sensors
-color = {6: 'seagreen', 7: 'lime', 8: 'darkolivegreen'}
+color = {6: '#555555', 7: '#888888', 8: '#aaaaaa'}
 print("Print tracks of sensors: {}".format(color.keys()))
+
+
+# plot sensors
+
+# plot detection cone (triangle instead of cone)
+for s in sensors:
+    x1, y1 = s['x'], s['y']  # origin
+    radius, heading, angle = s['range'], 0, s['angle']*math.pi/180
+    xt, yt = translate([x1, y1], [radius, 0])
+    x = [x1]
+    y = [y1]
+    # add some intermediate points
+    for alpha in np.linspace(heading - angle/2, heading + angle/2, 10):
+        xr, yr = rotate([x1, y1], [xt, yt], alpha)
+        x.append(xr)
+        y.append(yr)
+    # draw filled polygon
+    plt.fill(x, y, c='#eeeeee', zorder=1)
 
 # plot position of each sensor
 x = [row['x'] for row in sensors]
 y = [row['y'] for row in sensors]
-plt.scatter(x, y, c='grey')
+plt.scatter(x, y, c='grey', zorder=2)
+
 
 # plot scatter of each sensor's tracks
-
 def get_data_for_time(t, sensor):
     x, y, sigma = None, None, None
     try:
@@ -174,7 +245,8 @@ def get_data_for_time(t, sensor):
 pathcol = {}
 for sensor in color.keys():
     x, y, sigma = get_data_for_time(time[0], sensor)
-    pathcol[sensor] = plt.scatter(x, y, s=sigma, c=color[sensor])
+    pathcol[sensor] = plt.scatter(x, y, s=sigma, c=color[sensor], zorder=5)
+
 
 # plot track pairs
 def get_track_location(t, sensor, track):
@@ -183,12 +255,90 @@ def get_track_location(t, sensor, track):
     track = int(track)
     return tracks[ti][sensor][track]['x'], tracks[ti][sensor][track]['y']
 
-# draw track pairs by lines
+def draw_pairs(time):
+    if args.pairs is None:
+        return
+    # draw
+    l = 0
+    for pair in pairs[time_to_index(time)]:
+        try:
+            x1, y1 = get_track_location(time, pair['from_sensor'], pair['from_track'])
+            x2, y2 = get_track_location(time, pair['to_sensor'], pair['to_track'])
+            pair_lines[l].set_xdata([x1, x2])
+            pair_lines[l].set_ydata([y1, y2])
+            l = l + 1
+        except KeyError:
+            # pair is not in view
+            pass
+    for i in range(l, len(pair_lines)):
+        # reset unused pairs to (0, 0)
+        pair_lines[i].set_xdata([0, 0])
+        pair_lines[i].set_ydata([0, 0])
+
+# draw (dummy) track pairs by lines
 # restrict the number or lines that are visible
-lines = []
+pair_lines = []
 for p in range(50):
-    line, = plt.plot([0, 0], [0, 0], 'k-', color='black', lw=1)
-    lines.append(line)
+    line, = plt.plot([0, 0], [0, 0], 'k-', color='green', lw=1, zorder=4)
+    pair_lines.append(line)
+
+
+# draw monitor data
+def get_monitor_data_for_time(t):
+    """Returns a list (all monitor calls at the same timestamp) of list of
+    (comparable) points."""
+    if args.monitor_logs is None:
+        return [], [], [], []
+    # no monitor data for this timestamp
+    t = round(t,3)
+    if t not in monitor_x.keys():
+        return [], [], [], []
+    # x/y output status shall be the same
+    x = [v for call in monitor_x[t] for v in call['out']]
+    y = [v for call in monitor_y[t] for v in call['out']]
+    status = [v for call in monitor_x[t] for v in call['ostatus']]
+    lines = [list(zip(monitor_x[t][i]['out'], monitor_y[t][i]['out']))
+             for i in range(len(monitor_x[t]))]
+    return x, y, status, lines
+
+def draw_monitor_data(x, y, status, lines):
+    if args.monitor_logs is None:
+        return
+    # compared positions as dots
+    color_map = ['green', 'blue', 'red']  # OK, UNDEFINED, FAULTY
+    colors = [color_map[s] for s in status]
+    # update path collection of scatter plot
+    monitor_pathcol.set_color(colors)
+    a = np.array([x, y])
+    monitor_pathcol.set_offsets(a.transpose())
+    # link compared positions
+    if len(lines) > len(monitor_lines):
+        raise RuntimeException("""More lines to draw than canvas lines
+        available.""")
+    for i, line in enumerate(monitor_lines):
+        # update lines of plot
+        if i < len(lines):
+            x1, y1 = lines[i][0]
+            x2, y2 = lines[i][1]
+            line.set_xdata([x1, x2])
+            line.set_ydata([y1, y2])
+        else:
+            # reset remaining lines
+            line.set_xdata([0, 0])
+            line.set_ydata([0, 0])
+
+# draw (dummy) scatter
+monitor_pathcol = plt.scatter([0]*50, [0]*50, s=5, zorder=10)
+# draw (dummy) lines for monitor data
+# restrict the number or lines that are visible
+monitor_lines = []
+for p in range(50):
+    line, = plt.plot([0, 0], [0, 0], '--', color='black', lw=1, zorder=9)
+    monitor_lines.append(line)
+# draw true data
+x, y, status, lines = get_monitor_data_for_time(0)
+draw_monitor_data(x, y, status, lines)
+
 
 # the time can be advanced with a slider
 axtime = plt.axes([0.25, 0.1, 0.65, 0.03], facecolor='lightblue')
@@ -203,24 +353,28 @@ def update(val):
         a = np.array([x, y])
         pathcol[sensor].set_offsets(a.transpose())
     # update pair lines
-    l = 0
-    for pair in pairs[time_to_index(time)]:
-        try:
-            x1, y1 = get_track_location(time, pair['from_sensor'], pair['from_track'])
-            x2, y2 = get_track_location(time, pair['to_sensor'], pair['to_track'])
-            lines[l].set_xdata([x1, x2])
-            lines[l].set_ydata([y1, y2])
-            l = l + 1
-        except KeyError:
-            # pair is not in view
-            pass
-    for i in range(l, len(lines)):
-        # reset unused pairs to (0, 0)
-        lines[i].set_xdata([0, 0])
-        lines[i].set_ydata([0, 0])
+    draw_pairs(time)
+    # update monitor data
+    x, y, status, lines = get_monitor_data_for_time(time)
+    draw_monitor_data(x, y, status, lines)
     # redraw
     fig.canvas.draw_idle()
 
 slider_time.on_changed(update)
+
+
+def key_released(event):
+    if event.key == 'left' and slider_time.val > slider_time.valmin:
+        slider_time.set_val(slider_time.val - 0.1)
+        update(slider_time.val)
+    if event.key == 'right' and slider_time.val < slider_time.valmax:
+        slider_time.set_val(slider_time.val + 0.1)
+        update(slider_time.val)
+    elif event.key == 'q':
+        # close with key 'q' for convenience
+        plt.close(event.canvas.figure)
+
+fig.canvas.mpl_connect('key_release_event', key_released)
+
 
 plt.show()

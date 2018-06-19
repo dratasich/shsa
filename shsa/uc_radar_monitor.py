@@ -23,8 +23,8 @@ args = parser.parse_args()
 
 # create monitor
 model = SHSAModel(configfile=args.model)
-x_monitor = SHSAMonitor(model=model, domain='x')
-y_monitor = SHSAMonitor(model=model, domain='y')
+x_monitor = SHSAMonitor(model=model, domain='x', logfile='monitor-log-x.yaml')
+y_monitor = SHSAMonitor(model=model, domain='y', logfile='monitor-log-y.yaml')
 # specify available itoms manually (do not match the csv)
 
 
@@ -63,7 +63,6 @@ def log_pairs(t, sensors, pairs):
     for pair in pairs:
         row = [t, int(s1), int(pair[0]), int(s2), int(pair[1])]
         pairs_writer.writerow(row)
-
 
 
 #
@@ -136,13 +135,13 @@ def pair(s1, s2, track_id_pairs):
             pass
     return pairs
 
-def check_itoms(under_test, neighbor, predecessor_last):
+def check_itoms(timestamp, under_test, neighbor, predecessor_last):
     # indices of relevant fields in the track
     x, y = header.index('x'), header.index('y')
     vx, vy = header.index('v_x'), header.index('v_y')
     t = header.index('time')
     # fill itoms as available
-    itoms = {'x': under_test[x], 'y': under_test[y]}
+    itoms = {'t': timestamp, 'x': under_test[x], 'y': under_test[y]}
     if neighbor is not None:
         itoms.update({
             'x_nbr': neighbor[x],
@@ -200,11 +199,11 @@ def check(t, sensors, sensors_last):
         return
     # TODO: sum up status
     for track_under_test, track_neighbor in track_pairs_8:
-        status = check_itoms(track_under_test, track_neighbor, None)
+        status = check_itoms(t, track_under_test, track_neighbor, None)
     # for track_under_test, track_neighbor in track_pairs_6:
     #     status = check_itoms(track_under_test, track_neighbor)
-    for track_under_test, track_predicted in track_pairs_6old:
-        status = check_itoms(track_under_test, None, track_predicted)
+    for track_under_test, track_old in track_pairs_6old:
+        status = check_itoms(t, track_under_test, None, track_old)
     print(status)
 
 

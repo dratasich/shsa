@@ -44,11 +44,11 @@ def rotate(origin, point, angle):
     qy = oy + math.sin(angle) * (px - ox) + math.cos(angle) * (py - oy)
     return [qx, qy]
 
-def in_field_of_view(point, location, heading, range, angle):
+def in_field_of_view(point, location, heading, radius, angle):
     # approximate field of view with a triangle
     import math
     v1 = location
-    v2 = rotate(location, translate(v1, [range, 0]), heading - angle/2)
-    v3 = rotate(location, translate(v1, [range*math.sin(angle),
-                range*math.cos(angle)]), heading - angle/2)
+    vt = translate(v1, [radius, 0])
+    v2 = rotate(location, vt, heading - angle/2)
+    v3 = rotate(location, vt, heading + angle/2)
     return is_point_in_triangle(point, v1, v2, v3)

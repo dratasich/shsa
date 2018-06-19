@@ -25,7 +25,7 @@ relations:
       fct: "y_global"
 
   # the monitor additionally saves the last observation of each track (of a
-  # neighbor or the sensor itself) and forward estimate the position
+  # neighbor or the sensor itself) and forward estimates the position
   r36:
     x:
       in: [x_old, vx_old, t_old, t, y_old, vy_old, location_x, location_y, sensor_heading, range, angle]
@@ -70,14 +70,10 @@ properties:
     vx_old: ["vx_old"]
     vy_old: ["vy_old"]
 
-  # retrieved from sensor list
+  # retrieved from sensorList.csv
   constant:
-    location_x_minus1: 216.15
-    location_y_minus1: -125
     location_x: 259.81
     location_y: -150
-    location_x_plus1: 303.11
-    location_y_plus1: -175
     range: 50  # max range of a sensor (m)
     angle: 1.047197567  # field of view of a sensor (rad)
     sensor_heading: 0  # heading of a sensor, center of fov in x-axis (rad)
