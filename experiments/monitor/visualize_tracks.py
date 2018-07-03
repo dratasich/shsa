@@ -8,6 +8,8 @@ Visualize:
   track dots.
 * Monitor logs (compared itoms in the common domain).
 
+Move timeline with arrow keys. Quit with 'q'.
+
 """
 
 import numpy as np
@@ -15,6 +17,7 @@ import argparse
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.widgets import Slider, Button, RadioButtons
+import matplotlib.colors as colors
 import yaml
 import math
 
@@ -31,6 +34,9 @@ parser.add_argument('-l', '--monitor-logs', type=str, nargs=2, metavar=("X",
 parser.add_argument('-p', '--pairs', type=str,
                     help="""Draw a line between paired tracks given the output
                     (CSV of pairs) of the monitor.""")
+parser.add_argument('-s', '--sensor', type=int,
+                    default=7,
+                    help="Sensor ID under test.")
 args = parser.parse_args()
 
 
@@ -187,7 +193,6 @@ print("\nPlot")
 print("====")
 fig, ax = plt.subplots()
 plt.subplots_adjust(left=0.25, bottom=0.25)
-plt.axis([200, 370, -220, -100])
 plt.xlabel('x')
 plt.ylabel('y')
 
@@ -200,14 +205,27 @@ def time_to_index(t):
     return ti
 
 # sensors
-color = {6: '#555555', 7: '#888888', 8: '#aaaaaa'}
+color = {args.sensor-1: '#555555', args.sensor: '#888888', args.sensor+1: '#aaaaaa'}
 print("Print tracks of sensors: {}".format(color.keys()))
+# define area around sensor under test
+x1 = float("inf"); x2 = float("-inf")
+y1 = float("inf"); y2 = float("-inf")
+for s in sensors:
+    if int(s['sensor']) in set(color.keys()):
+        x1 = min(x1, s['x'])
+        x2 = max(x2, s['x'])
+        y1 = min(y1, s['y'])
+        y2 = max(y2, s['y'])
+d = math.sqrt(math.pow(sensors[1]['x']-sensors[0]['x'], 2) -
+              math.pow(sensors[1]['y']-sensors[0]['y'], 2))
+area = [x1-d, x2+d, y1-d, y2+d]
+plt.axis(area)
+print("Plot area around sensor {}: {}".format(args.sensor, area))
 
 
 # plot sensors
-
-# plot detection cone (triangle instead of cone)
-for s in sensors:
+def draw_fov(s, color):
+    """Draw field of view of a sensor (detection cone)."""
     x1, y1 = s['x'], s['y']  # origin
     radius, heading, angle = s['range'], 0, s['angle']*math.pi/180
     xt, yt = translate([x1, y1], [radius, 0])
@@ -219,12 +237,23 @@ for s in sensors:
         x.append(xr)
         y.append(yr)
     # draw filled polygon
-    plt.fill(x, y, c='#eeeeee', zorder=1)
+    plt.fill(x, y, c=color, zorder=1)
+
+# plot detection cone
+for s in sensors:
+    # draw cone of sensor under test only
+    sid = int(s['sensor'])
+    if sid in set(color.keys()):
+        draw_fov(s, colors.to_rgba('#aaaaaa', alpha=0.1))
 
 # plot position of each sensor
 x = [row['x'] for row in sensors]
 y = [row['y'] for row in sensors]
 plt.scatter(x, y, c='grey', zorder=2)
+# plot sensor id
+for s in sensors:
+    x, y, name = s['x'], s['y'], int(s['sensor'])
+    ax.annotate(name, (x, y), (x-1, y-3))
 
 
 # plot scatter of each sensor's tracks

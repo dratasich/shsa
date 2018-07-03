@@ -4,6 +4,7 @@
 import argparse
 import numpy as np
 import csv
+import os
 
 from monitor.shsamonitor import SHSAMonitor
 from monitor.fault import ItomFaultStatusType
@@ -16,16 +17,23 @@ config file.""")
 parser.add_argument('-m', '--model', type=str,
                     default="../config/radar-tracking.yaml",
                     help="SHSA model in a config file.")
+parser.add_argument('-s', '--sensor', type=int,
+                    default=7,
+                    help="Sensor ID to monitor.")
 parser.add_argument('csv', type=str,
                     help="CSV log file of itoms.")
 args = parser.parse_args()
 
 
+# create folder for logs if not yet exists
+if not os.path.exists("log"):
+    os.makedirs("log")
+
+
 # create monitor
 model = SHSAModel(configfile=args.model)
-x_monitor = SHSAMonitor(model=model, domain='x', logfile='monitor-log-x.yaml')
-y_monitor = SHSAMonitor(model=model, domain='y', logfile='monitor-log-y.yaml')
-# specify available itoms manually (do not match the csv)
+x_monitor = SHSAMonitor(model=model, domain='x', logfile='log/monitor-log-x.yaml')
+y_monitor = SHSAMonitor(model=model, domain='y', logfile='log/monitor-log-y.yaml')
 
 
 #
@@ -52,7 +60,7 @@ print("first row: {}".format(data[0]))
 # Log
 #
 
-f = open('pairs.csv', 'w', newline='')
+f = open('log/pairs.csv', 'w', newline='')
 pairs_writer = csv.writer(f)
 pairs_writer.writerow(["#time",
                        "from_sensor", "from_track",
@@ -165,44 +173,45 @@ def check_itoms(timestamp, under_test, neighbor, predecessor_last):
 
 # assume track ids are unique throughout the run (ids are not re-used when out
 # of range)
-track_id_pairs_s6 = []  # pairs s7 <--> s6
-track_id_pairs_s8 = []  # pairs s7 <--> s8
+track_id_pairs_spre = []  # pairs sensor to monitor <--> predecessor
+track_id_pairs_ssuc = []  # pairs sensor to monitor <--> successor
 
 def check(t, sensors, sensors_last):
-    """Check itoms in sensor 7 domain."""
+    """Check itoms in sensor-under-test's domain."""
     if sensors is None:
         return None
     # default
     status = None
     # make the monitoring concrete here
     try:
-        s6_last = sensors_last[6]
-        s6 = sensors[6]  # all contained in s6_last, only used to update pairs
-        s7 = sensors[7]
-        s8 = sensors[8]
-    except:
+        spre_last = sensors_last[args.sensor-1]
+        spre = sensors[args.sensor-1]  # all contained in spre_last, only used to update pairs
+        stest = sensors[args.sensor]
+        ssuc = sensors[args.sensor+1]
+    except Exception as e:
         # if we don't have data from neighboring sensors, abort
+        print("no data from neighboring sensors at time {}".format(t))
         return
     # associate tracks from one sensor to the other
-    global track_id_pairs_s6
-    global track_id_pairs_s8
-    track_id_pairs_s6 = update_id_pairs(s7, s6, track_id_pairs_s6)
-    track_id_pairs_s8 = update_id_pairs(s7, s8, track_id_pairs_s8)
-    track_pairs_6old = pair(s7, s6_last, track_id_pairs_s6)
-    #track_pairs_6 = pair(s7, s6, track_id_pairs_s6)
-    track_pairs_8 = pair(s7, s8, track_id_pairs_s8)
-    log_pairs(t, [7, 6], track_id_pairs_s6)
-    log_pairs(t, [7, 8], track_id_pairs_s8)
-    # check s7 against the neighbors
-    if not track_pairs_6old and not track_pairs_8:
+    global track_id_pairs_spre
+    global track_id_pairs_ssuc
+    track_id_pairs_spre = update_id_pairs(stest, spre, track_id_pairs_spre)
+    track_id_pairs_ssuc = update_id_pairs(stest, ssuc, track_id_pairs_ssuc)
+    track_pairs_spreold = pair(stest, spre_last, track_id_pairs_spre)
+    #track_pairs_spre = pair(stest, spre, track_id_pairs_spre)
+    track_pairs_ssuc = pair(stest, ssuc, track_id_pairs_ssuc)
+    log_pairs(t, [args.sensor, args.sensor-1], track_id_pairs_spre)
+    log_pairs(t, [args.sensor, args.sensor+1], track_id_pairs_ssuc)
+    # check sensor against the neighbors
+    if not track_pairs_spreold and not track_pairs_ssuc:
         print("no track pairs")
         return
     # TODO: sum up status
-    for track_under_test, track_neighbor in track_pairs_8:
+    for track_under_test, track_neighbor in track_pairs_ssuc:
         status = check_itoms(t, track_under_test, track_neighbor, None)
     # for track_under_test, track_neighbor in track_pairs_6:
     #     status = check_itoms(track_under_test, track_neighbor)
-    for track_under_test, track_old in track_pairs_6old:
+    for track_under_test, track_old in track_pairs_spreold:
         status = check_itoms(t, track_under_test, None, track_old)
     print(status)
 
