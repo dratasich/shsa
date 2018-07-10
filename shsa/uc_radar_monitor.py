@@ -9,6 +9,7 @@ import os
 from monitor.shsamonitor import SHSAMonitor
 from monitor.fault import ItomFaultStatusType
 from model.shsamodel import SHSAModel
+from utils.logger import Logger
 
 
 # parse optional config file
@@ -25,12 +26,21 @@ parser.add_argument('csv', type=str,
 args = parser.parse_args()
 
 
+#
+# Log
+#
+
 # create folder for logs if not yet exists
 if not os.path.exists("log"):
     os.makedirs("log")
 
+pairs_logger = Logger('log/pairs.yaml', mode='w');
 
-# create monitor
+
+#
+# Create monitors
+#
+
 model = SHSAModel(configfile=args.model)
 x_monitor = SHSAMonitor(model=model, domain='x', logfile='log/monitor-log-x.yaml')
 y_monitor = SHSAMonitor(model=model, domain='y', logfile='log/monitor-log-y.yaml')
@@ -57,23 +67,6 @@ print("first row: {}".format(data[0]))
 
 
 #
-# Log
-#
-
-f = open('log/pairs.csv', 'w', newline='')
-pairs_writer = csv.writer(f)
-pairs_writer.writerow(["#time",
-                       "from_sensor", "from_track",
-                       "to_sensor", "to_track"])
-
-def log_pairs(t, sensors, pairs):
-    s1, s2 = sensors
-    for pair in pairs:
-        row = [t, int(s1), int(pair[0]), int(s2), int(pair[1])]
-        pairs_writer.writerow(row)
-
-
-#
 # Maintain track id pairs
 #
 # Pair the tracks corresponding to the same vehicle, when the vehicle changes
@@ -88,7 +81,7 @@ def distance(track_a, track_b):
     return (track_a[x] - track_b[x])**2 + (track_a[y] - track_b[y])**2
 
 def find_match(track, possible_tracks, max_off=6):
-    """Find a matching track id for the given id.
+    """Find a matching track in the set of possible ones for the given track.
 
     track -- The track for which to find a matching track from another sensor.
     possible_tracks -- Tracks from another neighbor sensor.
@@ -97,15 +90,15 @@ def find_match(track, possible_tracks, max_off=6):
     offset.
 
     """
-    track_match = None
+    track_match_id = None
     track_distance = max_off+1.0
     # find best match (nearest track) in possible_tracks
     for tid, t in possible_tracks.items():
         d = distance(track, t)
         if d < max_off and d < track_distance:
-            track_match = tid
+            track_match_id = int(tid)
             track_distance = d
-    return track_match
+    return track_match_id
 
 def update_id_pairs(s1, s2, track_id_pairs):
     """Appends unmatched tracks in s1 to track_id_pairs.
@@ -119,7 +112,7 @@ def update_id_pairs(s1, s2, track_id_pairs):
             tid2 = find_match(t1, s2)
             # add new pair if successful
             if tid2 is not None:
-                track_id_pairs.append([tid1, tid2])
+                track_id_pairs.append([int(tid1), int(tid2)])
     return track_id_pairs
 
 def pair(s1, s2, track_id_pairs):
@@ -200,8 +193,10 @@ def check(t, sensors, sensors_last):
     track_pairs_spreold = pair(stest, spre_last, track_id_pairs_spre)
     #track_pairs_spre = pair(stest, spre, track_id_pairs_spre)
     track_pairs_ssuc = pair(stest, ssuc, track_id_pairs_ssuc)
-    log_pairs(t, [args.sensor, args.sensor-1], track_id_pairs_spre)
-    log_pairs(t, [args.sensor, args.sensor+1], track_id_pairs_ssuc)
+    pairs_logger.log(time=float(t), sensors=[args.sensor, args.sensor-1],
+                     pairs=track_id_pairs_spre)
+    pairs_logger.log(time=float(t), sensors=[args.sensor, args.sensor+1],
+                     pairs=track_id_pairs_ssuc)
     # check sensor against the neighbors
     if not track_pairs_spreold and not track_pairs_ssuc:
         print("no track pairs")
@@ -213,7 +208,6 @@ def check(t, sensors, sensors_last):
     #     status = check_itoms(track_under_test, track_neighbor)
     for track_under_test, track_old in track_pairs_spreold:
         status = check_itoms(t, track_under_test, None, track_old)
-    print(status)
 
 
 #

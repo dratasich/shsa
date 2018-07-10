@@ -21,6 +21,8 @@ import matplotlib.colors as colors
 import yaml
 import math
 
+from utils.logger import Logger
+
 
 # parse optional config file
 parser = argparse.ArgumentParser(description="""Execute SHSA engines given a
@@ -33,9 +35,8 @@ parser.add_argument('-l', '--monitor-logs', type=str, nargs=2, metavar=("X",
                     "Y"), help="Logfiles (yaml) of monitors.")
 parser.add_argument('-p', '--pairs', type=str,
                     help="""Draw a line between paired tracks given the output
-                    (CSV of pairs) of the monitor.""")
-parser.add_argument('-s', '--sensor', type=int,
-                    default=7,
+                    (YAML of pairs) of the monitor.""")
+parser.add_argument('-s', '--sensor', type=int, default=7,
                     help="Sensor ID under test.")
 args = parser.parse_args()
 
@@ -90,66 +91,28 @@ print("  sensors: {}".format(tracks[0].keys()))
 print("  tracks IDs of sensor {}: {}".format(s0, tracks[0][s0].keys()))
 print("  first track: {}".format(tracks[0][s0][t0]))
 
-def collect_pairs(time, data):
-    """Collect pairs per track time step.
-
-    Assumption: Pairs are listed in ascending time.
-    """
-    # default: no pairs per time step
-    pairs_timeline = []  # timeline of pairs
-    t = data[0]['time']  # first timestamp
-    ti_last = 0  # last timestamp index processed
-    tstep = time[1] - time[0]
-    pairs = []
-    for row in data:
-        ti = int(round((row['time'] - time[0]) / tstep, 0))
-        # gather pairs as long as its the same timestamp
-        if ti != ti_last:
-            # fill intermediate time steps that are not in the csv
-            for i in range(ti_last, ti-1):
-                pairs_timeline.append([])
-            # set pairs of current time step
-            pairs_timeline.append(pairs)
-            # reset for new timestamp
-            ti_last = ti
-            pairs = []
-        # save pair
-        pair = {'from_sensor': int(row['from_sensor']),
-                'from_track': int(row['from_track']),
-                'to_sensor': int(row['to_sensor']),
-                'to_track': int(row['to_track'])}
-        pairs.append(pair)
-    for i in range(ti_last, len(time)):
-        pairs_timeline.append([])
-    return pairs_timeline
-
+pairs_logger = None
 if args.pairs:
     print("\nPairs")
     print("------")
-    data = np.genfromtxt(args.pairs, delimiter=',', comments='#', names=True)
-    print("{} columns with names {}".format(len(data[0]), data.dtype.names))
-    print("first row: {}".format(data[0]))
-    pairs = collect_pairs(time, data)
-    print("pairs for first timestamp: {}".format(pairs[0]))
+    print("Load ...")
+    pairs_logger = Logger(args.pairs, 'r')
+    print("Pairs at timestamp 0.4: " + str(pairs_logger.get(time=0.4,
+                                                            tolerance=0.1)))
 
 # Note that a monitor log may not include all timestamps!
-def parse_monitor_log(filename):
-    monitor = {}
-    with open(filename, 'r') as f:
-        for data in yaml.load_all(f):
-            monitor[round(data['time'],3)] = data['monitor_calls']
-            print(".", end="", flush="True")
-    print("")
-    return monitor
-
+monitor_x = None
+monitor_y = None
 if args.monitor_logs:
     print("\nMonitor-Log")
     print("-----------")
-    monitor_x = parse_monitor_log(args.monitor_logs[0])
-    monitor_y = parse_monitor_log(args.monitor_logs[1])
-    assert len(monitor_x) == len(monitor_y), "monitor x/y logs mismatch"
-    print("rows/timesteps: {}".format(len(monitor_x)))
-    print("first row: {}".format(monitor_x[list(monitor_x.keys())[0]]))
+    print("Load x ...")
+    monitor_x = Logger(args.monitor_logs[0], 'r')
+    print("Load y ...")
+    monitor_y = Logger(args.monitor_logs[1], 'r')
+    assert len(monitor_x.documents) == len(monitor_y.documents), "monitor x/y logs mismatch"
+    print("rows/timesteps: {}".format(len(monitor_x.documents)))
+    print("first row: {}".format(monitor_x.get()))
 
 
 #
@@ -287,18 +250,24 @@ def get_track_location(t, sensor, track):
 def draw_pairs(time):
     if args.pairs is None:
         return
+    # get all yaml docs with timestamp=time
+    docs = pairs_logger.get(time=time, tolerance=0.1)
     # draw
     l = 0
-    for pair in pairs[time_to_index(time)]:
-        try:
-            x1, y1 = get_track_location(time, pair['from_sensor'], pair['from_track'])
-            x2, y2 = get_track_location(time, pair['to_sensor'], pair['to_track'])
-            pair_lines[l].set_xdata([x1, x2])
-            pair_lines[l].set_ydata([y1, y2])
-            l = l + 1
-        except KeyError:
-            # pair is not in view
-            pass
+    for doc in docs:
+        s_from, s_to = doc['sensors']
+        pairs = doc['pairs']
+        for pair in pairs:
+            tid_from, tid_to = pair
+            try:
+                x1, y1 = get_track_location(time, s_from, tid_from)
+                x2, y2 = get_track_location(time, s_to, tid_to)
+                pair_lines[l].set_xdata([x1, x2])
+                pair_lines[l].set_ydata([y1, y2])
+                l = l + 1
+            except KeyError:
+                # pair is not in view
+                pass
     for i in range(l, len(pair_lines)):
         # reset unused pairs to (0, 0)
         pair_lines[i].set_xdata([0, 0])
@@ -318,16 +287,18 @@ def get_monitor_data_for_time(t):
     (comparable) points."""
     if args.monitor_logs is None:
         return [], [], [], []
+    # monitor data at timestamp
+    x_calls = monitor_x.get(time=t, tolerance=0.1)
+    y_calls = monitor_y.get(time=t, tolerance=0.1)
     # no monitor data for this timestamp
-    t = round(t,3)
-    if t not in monitor_x.keys():
+    if len(x_calls) == 0 or len(y_calls) == 0:
         return [], [], [], []
     # x/y output status shall be the same
-    x = [v for call in monitor_x[t] for v in call['out']]
-    y = [v for call in monitor_y[t] for v in call['out']]
-    status = [v for call in monitor_x[t] for v in call['ostatus']]
-    lines = [list(zip(monitor_x[t][i]['out'], monitor_y[t][i]['out']))
-             for i in range(len(monitor_x[t]))]
+    x = [v for call in x_calls for v in call['out']]
+    y = [v for call in y_calls for v in call['out']]
+    status = [v for call in x_calls for v in call['ostatus']]
+    lines = [list(zip(x_calls[i]['out'], y_calls[i]['out']))
+             for i in range(len(x_calls))]
     return x, y, status, lines
 
 def draw_monitor_data(x, y, status, lines):
