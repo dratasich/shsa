@@ -21,7 +21,7 @@ class TestCodeFormat(unittest.TestCase):
                                stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         out, error = git.communicate()
         # parse output for file names
-        modified_re = re.compile('^\s+[AM]+\s+(.*\.py)', re.MULTILINE)
+        modified_re = re.compile(r'^\s+[AM]+\s+(.*\.py)', re.MULTILINE)
         staged_files = modified_re.findall(out.decode('utf-8'))
         # caveat: this only works if the test is called from the base directory
         # of shsa (e.g., execute unittest with discover)
