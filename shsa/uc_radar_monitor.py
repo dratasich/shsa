@@ -34,7 +34,7 @@ args = parser.parse_args()
 if not os.path.exists("log"):
     os.makedirs("log")
 
-pairs_logger = Logger('log/pairs.yaml', mode='w');
+pairs_logger = Logger('log/pairs.yaml', mode='w')
 
 
 #
@@ -42,8 +42,10 @@ pairs_logger = Logger('log/pairs.yaml', mode='w');
 #
 
 model = SHSAModel(configfile=args.model)
-x_monitor = SHSAMonitor(model=model, domain='x', logfile='log/monitor-log-x.yaml')
-y_monitor = SHSAMonitor(model=model, domain='y', logfile='log/monitor-log-y.yaml')
+x_monitor = SHSAMonitor(model=model, domain='x',
+                        logfile='log/monitor-log-x.yaml')
+y_monitor = SHSAMonitor(model=model, domain='y',
+                        logfile='log/monitor-log-y.yaml')
 
 
 #
@@ -130,7 +132,7 @@ def pair(s1, s2, track_id_pairs):
             t1 = s1[tid1]
             t2 = s2[tid2]
             pairs.append([t1, t2])
-        except:
+        except Exception as e:
             # tracks may vanish from view, ignore
             # (pair gets unused at some point)
             pass

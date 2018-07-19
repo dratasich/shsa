@@ -188,7 +188,7 @@ class SHSAMonitor(Monitor):
         't'). If not available a counter is used (0, 1, ...).
 
         """
-        assert self.__logger != None, "cannot write log without logger"
+        assert self.__logger is not None, "cannot write log without logger"
         # retrieve timestamp from itoms
         timestamp = self.__log_timestamp + 1  # default counter
         if 'time' in itoms.keys():

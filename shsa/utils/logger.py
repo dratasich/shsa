@@ -82,14 +82,14 @@ class Logger(object):
         if self.__mode not in {'w', 'a'}:
             raise RuntimeError("log is only allowed in write and append mode")
         """Log data from keyworded, variable-length dictionary **kwargs."""
-        assert self.__logfile != None, "cannot write log without logfile path"
+        assert self.__logfile is not None, \
+            "cannot write log without logfile path"
         # default counter (when kwarg does not contain 'time' key)
         timestamp = self.__timestamp + 1
         # prepare YAML document to dump
         document = {'time': timestamp}
         document.update(kwargs)  # may override 'time'
         # dump logged data of the last timestamp
-        #yaml = YAML(typ='unsafe')
         with open(self.__logfile, 'a') as f:
             f.write("---\n")
             yaml.dump(document, f)
