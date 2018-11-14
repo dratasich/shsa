@@ -1,3 +1,6 @@
-networkx
-future
-pycodestyle
+decorator==4.3.0
+future==0.17.1
+networkx==2.2
+pkg-resources==0.0.0
+pycodestyle==2.4.0
+PyYAML==3.13
