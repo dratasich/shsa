@@ -2,6 +2,7 @@
 
 """
 
+from __future__ import absolute_import
 from enum import IntEnum
 
 from monitor.comparator import SimpleComparator

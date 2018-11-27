@@ -2,7 +2,7 @@
 
 """
 
-import math
+import numpy as np
 import numbers
 
 
@@ -32,7 +32,7 @@ class SimpleComparator(Comparator):
         for i in range(len(values)):
             for j in range(i+1, len(values)):
                 try:
-                    if not math.isclose(values[i], values[j], abs_tol=error):
+                    if not np.isclose(values[i], values[j], atol=error):
                         mismatch[i] = mismatch[i] + 1
                         with_idx[i].add(j)
                         mismatch[j] = mismatch[j] + 1

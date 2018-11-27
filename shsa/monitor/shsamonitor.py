@@ -10,6 +10,7 @@ domain. Relations probably have to be concatenated -> to substitutions.
 
 """
 
+from __future__ import absolute_import
 import networkx as nx
 from collections import OrderedDict
 import yaml

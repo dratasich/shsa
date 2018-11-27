@@ -6,6 +6,7 @@ members of root and model of `Substitution` are used).
 
 """
 
+from __future__ import absolute_import
 from future.standard_library import install_aliases
 install_aliases()
 from collections import UserList

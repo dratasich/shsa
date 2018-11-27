@@ -3,13 +3,14 @@ adaptation.
 
 """
 
+from __future__ import absolute_import
 from future.standard_library import install_aliases
 install_aliases()
 from collections import UserList
 import networkx as nx
 from subprocess import call  # call dot to generate .png out of .dot files
-import textwrap
-
+import textwrap3 as textwrap
+1
 from model.shsamodel import SHSANodeType
 from model.utility import *
 
@@ -267,9 +268,14 @@ class Substitution(UserList):
         return "U = " + str(u) + " | " + str(list(self))
 
     def __eq__(self, other):
-        return (self.relations() == other.relations()) and \
-            (self.root == other.root) and \
-            (self.model == other.model)
+        if isinstance(other, Substitution):
+            return (self.relations() == other.relations()) \
+                and (self.root == other.root) \
+                and (self.model == other.model)
+        return False
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
 
     def __hash__(self):
         return hash((self.root, self.model, self.relations()))
