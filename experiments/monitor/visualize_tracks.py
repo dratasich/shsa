@@ -20,6 +20,7 @@ from matplotlib.widgets import Slider, Button, RadioButtons
 import matplotlib.colors as colors
 import yaml
 import math
+from collections import OrderedDict
 
 from utils.logger import Logger
 
@@ -143,6 +144,15 @@ def rotate(origin, point, angle):
     return [qx, qy]
 
 
+ti = 0
+tstep = time[1] - time[0]  # assume equidistant time steps!
+
+def time_to_index(t):
+    t = round(t, 1)
+    ti = int(round((t - time[0]) / tstep, 0))
+    return ti
+
+
 #
 # Plot
 #
@@ -154,36 +164,40 @@ def rotate(origin, point, angle):
 
 print("\nPlot")
 print("====")
-fig, ax = plt.subplots()
-plt.subplots_adjust(left=0.25, bottom=0.25)
-plt.xlabel('x')
-plt.ylabel('y')
+fig, (axtracks, axstatus, axtime) = plt.subplots(3, 1, gridspec_kw = {'height_ratios':[10, 10, 1]})
+plt.subplots_adjust(top=0.95, bottom=0.05, hspace=0.5)
 
-ti = 0
-tstep = time[1] - time[0]  # assume equidistant time steps!
+# --- subplot ---
+axtracks.set_xlabel('x')
+axtracks.set_ylabel('y')
 
-def time_to_index(t):
-    t = round(t, 1)
-    ti = int(round((t - time[0]) / tstep, 0))
-    return ti
-
+#
 # sensors
+#
+
 color = {args.sensor-1: '#555555', args.sensor: '#888888', args.sensor+1: '#aaaaaa'}
 print("Print tracks of sensors: {}".format(color.keys()))
 # define area around sensor under test
 x1 = float("inf"); x2 = float("-inf")
 y1 = float("inf"); y2 = float("-inf")
+# min and max positions of sensors to plot
 for s in sensors:
     if int(s['sensor']) in set(color.keys()):
         x1 = min(x1, s['x'])
         x2 = max(x2, s['x'])
         y1 = min(y1, s['y'])
         y2 = max(y2, s['y'])
-d = math.sqrt(math.pow(sensors[1]['x']-sensors[0]['x'], 2) -
+# detection range of sensor under test
+x2 = max(x2, sensors[args.sensor]['x'] + sensors[args.sensor]['range'])
+d = math.sqrt(math.pow(sensors[1]['x']-sensors[0]['x'], 2) +
               math.pow(sensors[1]['y']-sensors[0]['y'], 2))
-area = [x1-d, x2+d, y1-d, y2+d]
-plt.axis(area)
-print("Plot area around sensor {}: {}".format(args.sensor, area))
+print("Pylon distance: {}".format(d))
+axtracks.set_xlim(x1-d/2, x2+d/2)
+axtracks.set_ylim(y1-d/2, y2+d/2)
+# set the same scale for x/y
+axtracks.set_aspect('equal', adjustable='datalim')
+axtracks.set_anchor('C')
+print("Plot area around sensor {}: {}".format(args.sensor, [x1-d, x2+d, y1-d, y2+d]))
 
 
 # plot sensors
@@ -200,7 +214,7 @@ def draw_fov(s, color):
         x.append(xr)
         y.append(yr)
     # draw filled polygon
-    plt.fill(x, y, c=color, zorder=1)
+    axtracks.fill(x, y, c=color, zorder=1)
 
 # plot detection cone
 for s in sensors:
@@ -212,12 +226,16 @@ for s in sensors:
 # plot position of each sensor
 x = [row['x'] for row in sensors]
 y = [row['y'] for row in sensors]
-plt.scatter(x, y, c='grey', zorder=2)
+axtracks.scatter(x, y, c='grey', zorder=2)
 # plot sensor id
 for s in sensors:
     x, y, name = s['x'], s['y'], int(s['sensor'])
-    ax.annotate(name, (x, y), (x-1, y-3))
+    axtracks.annotate(name, (x, y), (x-1, y-3))
 
+
+#
+# tracks
+#
 
 # plot scatter of each sensor's tracks
 def get_data_for_time(t, sensor):
@@ -237,8 +255,12 @@ def get_data_for_time(t, sensor):
 pathcol = {}
 for sensor in color.keys():
     x, y, sigma = get_data_for_time(time[0], sensor)
-    pathcol[sensor] = plt.scatter(x, y, s=sigma, c=color[sensor], zorder=5)
+    pathcol[sensor] = axtracks.scatter(x, y, s=sigma, c=color[sensor], zorder=5)
 
+
+#
+# pairs
+#
 
 # plot track pairs
 def get_track_location(t, sensor, track):
@@ -277,9 +299,13 @@ def draw_pairs(time):
 # restrict the number or lines that are visible
 pair_lines = []
 for p in range(50):
-    line, = plt.plot([0, 0], [0, 0], 'k-', color='green', lw=1, zorder=4)
+    line, = axtracks.plot([0, 0], [0, 0], 'k-', color='green', lw=1, zorder=4)
     pair_lines.append(line)
 
+
+#
+# monitor
+#
 
 # draw monitor data
 def get_monitor_data_for_time(t):
@@ -301,9 +327,10 @@ def get_monitor_data_for_time(t):
              for i in range(len(x_calls))]
     return x, y, status, lines
 
-def draw_monitor_data(x, y, status, lines):
+def draw_monitor_data(t):
     if args.monitor_logs is None:
         return
+    x, y, status, lines = get_monitor_data_for_time(t)
     # compared positions as dots
     color_map = ['green', 'blue', 'red']  # OK, UNDEFINED, FAULTY
     colors = [color_map[s] for s in status]
@@ -328,20 +355,38 @@ def draw_monitor_data(x, y, status, lines):
             line.set_ydata([0, 0])
 
 # draw (dummy) scatter
-monitor_pathcol = plt.scatter([0]*50, [0]*50, s=5, zorder=10)
+monitor_pathcol = axtracks.scatter([0]*50, [0]*50, s=5, zorder=10)
 # draw (dummy) lines for monitor data
 # restrict the number or lines that are visible
 monitor_lines = []
 for p in range(50):
-    line, = plt.plot([0, 0], [0, 0], '--', color='black', lw=1, zorder=9)
+    line, = axtracks.plot([0, 0], [0, 0], '--', color='black', lw=1, zorder=9)
     monitor_lines.append(line)
 # draw true data
-x, y, status, lines = get_monitor_data_for_time(0)
-draw_monitor_data(x, y, status, lines)
+draw_monitor_data(0)
 
+
+# --- subplot ---
+
+# monitor status
+status = OrderedDict()
+status["paired"] = 0.2
+status["lost"] = 0.1
+status["health score"] = 0.8
+axstatus.set_ylim(0, 1)  # all values normalized
+axstatus.bar(range(len(status)), list(status.values()), tick_label=list(status.keys()))
+
+def draw_status(t):
+    pass
+
+# --- subplot ---
+
+#
+# time update, keys
+#
 
 # the time can be advanced with a slider
-axtime = plt.axes([0.25, 0.1, 0.65, 0.03], facecolor='lightblue')
+#axtime = plt.axes([0.25, 0.1, 0.65, 0.03], facecolor='lightblue')
 slider_time = Slider(axtime, 'Time', time[0], time[-1], valinit=time[0],
                      valstep=tstep)
 
@@ -355,8 +400,9 @@ def update(val):
     # update pair lines
     draw_pairs(time)
     # update monitor data
-    x, y, status, lines = get_monitor_data_for_time(time)
-    draw_monitor_data(x, y, status, lines)
+    draw_monitor_data(time)
+    # update status
+    draw_status(time)
     # redraw
     fig.canvas.draw_idle()
 

@@ -1,8 +1,8 @@
-decorator==4.3.0
-future==0.17.1
-networkx==2.2
-numpy==1.15.4
-pkg-resources==0.0.0
-pycodestyle==2.4.0
-PyYAML==3.13
-textwrap3==0.9.1
+decorator
+future
+networkx
+numpy
+pkg-resources
+pycodestyle
+PyYAML
+textwrap3
